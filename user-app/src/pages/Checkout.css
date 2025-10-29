@@ -1,0 +1,133 @@
+.checkout-page {
+  padding: 40px 20px;
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.checkout-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.address-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  border: 2px solid #eee;
+  border-radius: var(--border-radius);
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.address-item:hover {
+  border-color: var(--primary-color);
+}
+
+.address-item.selected {
+  border-color: var(--primary-color);
+  background-color: #fff5f5;
+}
+
+.address-item input[type="radio"] {
+  margin-top: 2px;
+}
+
+.address-item p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.address-form {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+}
+
+.checkout-sidebar .card {
+  position: sticky;
+  top: 90px;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.payment-option {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  border: 2px solid #eee;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-option:hover {
+  border-color: var(--primary-color);
+  background-color: #fff5f5;
+}
+
+.payment-option.selected {
+  border-color: var(--primary-color);
+  background-color: #fff5f5;
+}
+
+.payment-option input[type="radio"] {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.payment-option div {
+  flex: 1;
+}
+
+.payment-option strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--dark-color);
+}
+
+.payment-option p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+@media (max-width: 968px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,24 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-card {
+  max-width: 450px;
+  width: 90%;
+}
+
+.login-card h1 {
+  text-align: center;
+  margin-bottom: 10px;
+  color: var(--dark-color);
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+}

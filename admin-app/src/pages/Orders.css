@@ -1,0 +1,48 @@
+.orders-page {
+  padding: 30px 0;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.filter-select {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  background: white;
+}
+
+.orders-table {
+  overflow-x: auto;
+}
+
+.status-select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.status-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+table {
+  min-width: 1000px;
+}
+
+table td {
+  font-size: 14px;
+}
+
+table td small {
+  color: #888;
+  font-size: 12px;
+}
