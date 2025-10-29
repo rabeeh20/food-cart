@@ -73,6 +73,7 @@ const MenuManagement = () => {
   };
 
   const handleEdit = (item) => {
+    console.log('Edit clicked for item:', item);
     setEditingItem(item);
     setFormData({
       name: item.name,
@@ -86,6 +87,7 @@ const MenuManagement = () => {
       tags: item.tags?.join(', ') || ''
     });
     setShowModal(true);
+    console.log('Modal should be shown, showModal:', true);
   };
 
   const handleDelete = async (id) => {
