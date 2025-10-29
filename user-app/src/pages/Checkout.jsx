@@ -90,26 +90,23 @@ const Checkout = () => {
     setLoading(true);
 
     try {
-      // Create order
-      const orderData = {
-        items: cart.map(item => ({
-          menuItem: item._id,
-          quantity: item.quantity
-        })),
-        deliveryAddress: selectedAddress,
-        paymentMethod: paymentMethod
-      };
-
-      const orderResponse = await orderAPI.create(orderData);
-
-      if (!orderResponse.data.success) {
-        throw new Error('Failed to create order');
-      }
-
-      const order = orderResponse.data.order;
-
-      // Handle Cash on Delivery
+      // Handle Cash on Delivery - Create order immediately
       if (paymentMethod === 'cod') {
+        const orderData = {
+          items: cart.map(item => ({
+            menuItem: item._id,
+            quantity: item.quantity
+          })),
+          deliveryAddress: selectedAddress,
+          paymentMethod: 'cod'
+        };
+
+        const orderResponse = await orderAPI.create(orderData);
+
+        if (!orderResponse.data.success) {
+          throw new Error('Failed to create order');
+        }
+
         clearCart();
         toast.success('Order placed successfully! Pay on delivery.');
         navigate('/orders');
@@ -117,7 +114,7 @@ const Checkout = () => {
         return;
       }
 
-      // Handle Razorpay payment
+      // Handle Razorpay payment - Do NOT create order yet
       // Load Razorpay
       const res = await loadRazorpay();
 
@@ -127,10 +124,35 @@ const Checkout = () => {
         return;
       }
 
-      // Create Razorpay order
+      // Calculate total amount
+      const subtotal = getCartTotal();
+      const total = subtotal + 40; // Including delivery fee
+
+      // Create Razorpay order (not our DB order yet)
+      const razorpayOrderData = {
+        amount: total,
+        currency: 'INR',
+        receipt: `receipt_${Date.now()}`
+      };
+
+      // We need a temporary ID for Razorpay, so let's create a minimal order first
+      // but mark it as pending payment
+      const tempOrderData = {
+        items: cart.map(item => ({
+          menuItem: item._id,
+          quantity: item.quantity
+        })),
+        deliveryAddress: selectedAddress,
+        paymentMethod: 'razorpay'
+      };
+
+      const tempOrderResponse = await orderAPI.create(tempOrderData);
+      const tempOrder = tempOrderResponse.data.order;
+
+      // Create Razorpay payment order
       const paymentOrderResponse = await paymentAPI.createOrder({
-        amount: order.totalAmount,
-        orderId: order.orderId
+        amount: tempOrder.totalAmount,
+        orderId: tempOrder.orderId
       });
 
       const { orderId, amount, currency, key } = paymentOrderResponse.data;
@@ -141,7 +163,7 @@ const Checkout = () => {
         amount,
         currency,
         name: 'FoodCart',
-        description: `Order ${order.orderId}`,
+        description: `Order ${tempOrder.orderId}`,
         order_id: orderId,
         handler: async function (response) {
           try {
@@ -149,16 +171,22 @@ const Checkout = () => {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
-              orderId: order.orderId
+              orderId: tempOrder.orderId
             });
 
             if (verifyResponse.data.success) {
               clearCart();
-              toast.success('Order placed successfully!');
+              toast.success('Payment successful! Order placed.');
               navigate('/orders');
             }
           } catch (error) {
             toast.error('Payment verification failed');
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            toast.error('Payment cancelled');
+            setLoading(false);
           }
         },
         prefill: {
@@ -172,9 +200,9 @@ const Checkout = () => {
 
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
+      setLoading(false); // Reset loading after opening payment modal
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to place order');
-    } finally {
       setLoading(false);
     }
   };

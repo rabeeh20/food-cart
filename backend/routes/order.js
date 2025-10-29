@@ -73,8 +73,9 @@ router.post('/', verifyUser, async (req, res) => {
 
     await order.save();
 
-    // Send order confirmation email
-    if (req.user.email) {
+    // Send order confirmation email only for COD orders
+    // For Razorpay, email will be sent after payment verification
+    if (req.user.email && paymentMethod === 'cod') {
       await sendOrderConfirmation(req.user.email, {
         orderId: order.orderId,
         customerName: deliveryAddress.fullName,
