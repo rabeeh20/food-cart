@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { adminAPI } from '../utils/api';
 import toast from 'react-hot-toast';
+import { RefreshCw } from 'lucide-react';
 import './Orders.css';
 
 const statusOptions = ['placed', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -9,24 +10,54 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     fetchOrders();
   }, [filter]);
 
-  const fetchOrders = async () => {
-    setLoading(true);
+  // Auto-refresh every 10 seconds
+  useEffect(() => {
+    if (autoRefresh) {
+      intervalRef.current = setInterval(() => {
+        fetchOrders(true); // Silent refresh
+      }, 10000); // 10 seconds
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [autoRefresh, filter]);
+
+  const fetchOrders = async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    }
     try {
       const params = filter ? { status: filter } : {};
       const response = await adminAPI.getOrders(params);
       if (response.data.success) {
         setOrders(response.data.orders);
+        setLastRefresh(new Date());
       }
     } catch (error) {
-      toast.error('Failed to fetch orders');
+      if (!silent) {
+        toast.error('Failed to fetch orders');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
+  };
+
+  const handleManualRefresh = () => {
+    fetchOrders();
+    toast.success('Orders refreshed!');
   };
 
   const handleStatusUpdate = async (orderId, newStatus) => {
@@ -56,12 +87,38 @@ const Orders = () => {
     <div className="orders-page">
       <div className="orders-header">
         <h1>Orders Management</h1>
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="filter-select">
-          <option value="">All Orders</option>
-          {statusOptions.map(status => (
-            <option key={status} value={status}>{status.replace('_', ' ')}</option>
-          ))}
-        </select>
+        <div className="orders-controls">
+          <select value={filter} onChange={(e) => setFilter(e.target.value)} className="filter-select">
+            <option value="">All Orders</option>
+            {statusOptions.map(status => (
+              <option key={status} value={status}>{status.replace('_', ' ')}</option>
+            ))}
+          </select>
+
+          <div className="refresh-controls">
+            <button
+              className="btn btn-outline refresh-btn"
+              onClick={handleManualRefresh}
+              title="Refresh now"
+            >
+              <RefreshCw size={16} />
+              Refresh
+            </button>
+
+            <label className="auto-refresh-toggle">
+              <input
+                type="checkbox"
+                checked={autoRefresh}
+                onChange={(e) => setAutoRefresh(e.target.checked)}
+              />
+              <span>Auto-refresh (10s)</span>
+            </label>
+
+            <span className="last-refresh">
+              Last updated: {lastRefresh.toLocaleTimeString()}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="orders-table card">

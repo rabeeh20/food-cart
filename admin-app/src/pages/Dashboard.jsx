@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { adminAPI } from '../utils/api';
 import { Package, DollarSign, Users, TrendingUp } from 'lucide-react';
 import './Dashboard.css';
@@ -6,12 +6,27 @@ import './Dashboard.css';
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     fetchStats();
+
+    // Auto-refresh every 30 seconds for dashboard
+    intervalRef.current = setInterval(() => {
+      fetchStats(true); // Silent refresh
+    }, 30000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, []);
 
-  const fetchStats = async () => {
+  const fetchStats = async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    }
     try {
       const response = await adminAPI.getStats();
       if (response.data.success) {
@@ -20,7 +35,9 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Failed to fetch stats', error);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
