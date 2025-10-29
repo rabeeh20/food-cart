@@ -12,6 +12,7 @@ const sampleMenuItems = [
     price: 280,
     category: 'Main Course',
     isVeg: true,
+    stock: 50,
     preparationTime: 25,
     tags: ['Popular', 'Spicy']
   },
@@ -21,6 +22,7 @@ const sampleMenuItems = [
     price: 320,
     category: 'Main Course',
     isVeg: false,
+    stock: 40,
     preparationTime: 35,
     tags: ['Popular', 'Bestseller']
   },
@@ -30,6 +32,7 @@ const sampleMenuItems = [
     price: 180,
     category: 'Starter',
     isVeg: true,
+    stock: 60,
     preparationTime: 20,
     tags: ['Starter', 'Chinese']
   },
@@ -39,6 +42,7 @@ const sampleMenuItems = [
     price: 220,
     category: 'Main Course',
     isVeg: true,
+    stock: 70,
     preparationTime: 30,
     tags: ['Popular']
   },
@@ -48,6 +52,7 @@ const sampleMenuItems = [
     price: 260,
     category: 'Starter',
     isVeg: false,
+    stock: 35,
     preparationTime: 25,
     tags: ['Grilled', 'Tandoor']
   },
@@ -57,6 +62,7 @@ const sampleMenuItems = [
     price: 80,
     category: 'Dessert',
     isVeg: true,
+    stock: 100,
     preparationTime: 10,
     tags: ['Sweet', 'Popular']
   },
@@ -66,6 +72,7 @@ const sampleMenuItems = [
     price: 120,
     category: 'Snacks',
     isVeg: true,
+    stock: 45,
     preparationTime: 20,
     tags: ['South Indian', 'Breakfast']
   },
@@ -75,6 +82,7 @@ const sampleMenuItems = [
     price: 60,
     category: 'Beverage',
     isVeg: true,
+    stock: 80,
     preparationTime: 5,
     tags: ['Refreshing', 'Cold']
   },
@@ -84,6 +92,7 @@ const sampleMenuItems = [
     price: 250,
     category: 'Combo',
     isVeg: true,
+    stock: 30,
     preparationTime: 30,
     tags: ['Combo', 'Value']
   },
@@ -93,6 +102,7 @@ const sampleMenuItems = [
     price: 40,
     category: 'Snacks',
     isVeg: true,
+    stock: 150,
     preparationTime: 15,
     tags: ['Bread']
   },
@@ -102,6 +112,7 @@ const sampleMenuItems = [
     price: 300,
     category: 'Starter',
     isVeg: false,
+    stock: 25,
     preparationTime: 25,
     tags: ['Seafood', 'Crispy']
   },
@@ -111,6 +122,7 @@ const sampleMenuItems = [
     price: 80,
     category: 'Beverage',
     isVeg: true,
+    stock: 90,
     preparationTime: 5,
     tags: ['Cold', 'Sweet']
   }

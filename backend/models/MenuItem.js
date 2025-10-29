@@ -30,6 +30,11 @@ const menuItemSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  stock: {
+    type: Number,
+    default: 100,
+    min: 0
+  },
   preparationTime: {
     type: Number,
     default: 30 // in minutes

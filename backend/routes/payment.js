@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { verifyUser } from '../middleware/auth.js';
 import Order from '../models/Order.js';
 import User from '../models/User.js';
+import MenuItem from '../models/MenuItem.js';
 import { sendOrderConfirmation } from '../utils/email.js';
 
 const router = express.Router();
@@ -122,6 +123,14 @@ router.post('/verify-payment', verifyUser, async (req, res) => {
       },
       { new: true }
     ).populate('items.menuItem');
+
+    // Reduce stock for each item after successful payment
+    for (const item of order.items) {
+      await MenuItem.findByIdAndUpdate(
+        item.menuItem._id,
+        { $inc: { stock: -item.quantity } }
+      );
+    }
 
     // Send order confirmation email after successful payment
     if (req.user.email) {

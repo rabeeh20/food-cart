@@ -18,6 +18,7 @@ const MenuManagement = () => {
     category: 'Main Course',
     isVeg: true,
     isAvailable: true,
+    stock: 100,
     preparationTime: 30,
     image: '',
     tags: ''
@@ -49,6 +50,7 @@ const MenuManagement = () => {
     const data = {
       ...formData,
       price: parseFloat(formData.price),
+      stock: parseInt(formData.stock),
       preparationTime: parseInt(formData.preparationTime),
       tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : []
     };
@@ -82,6 +84,7 @@ const MenuManagement = () => {
       category: item.category,
       isVeg: item.isVeg,
       isAvailable: item.isAvailable,
+      stock: item.stock || 100,
       preparationTime: item.preparationTime,
       image: item.image || '',
       tags: item.tags?.join(', ') || ''
@@ -112,6 +115,7 @@ const MenuManagement = () => {
       category: 'Main Course',
       isVeg: true,
       isAvailable: true,
+      stock: 100,
       preparationTime: 30,
       image: '',
       tags: ''
@@ -156,6 +160,11 @@ const MenuManagement = () => {
                   {item.isAvailable ? 'Available' : 'Unavailable'}
                 </span>
                 <span className="prep-time">⏱️ {item.preparationTime} mins</span>
+              </div>
+              <div className="item-stock">
+                <span className={`stock-info ${item.stock === 0 ? 'out-of-stock' : item.stock < 10 ? 'low-stock' : ''}`}>
+                  📦 Stock: {item.stock} {item.stock < 10 && item.stock > 0 ? '(Low)' : ''} {item.stock === 0 ? '(Out of Stock)' : ''}
+                </span>
               </div>
               <div className="item-actions">
                 <button className="btn btn-outline" onClick={() => handleEdit(item)}>
@@ -228,6 +237,19 @@ const MenuManagement = () => {
                   </select>
                 </div>
 
+                <div className="input-group">
+                  <label>Stock</label>
+                  <input
+                    type="number"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                    required
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
                 <div className="input-group">
                   <label>Prep Time (mins)</label>
                   <input

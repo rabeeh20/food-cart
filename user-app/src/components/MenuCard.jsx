@@ -12,13 +12,20 @@ const MenuCard = ({ item }) => {
     toast.success(`${item.name} added to cart!`);
   };
 
+  const isOutOfStock = item.stock === 0;
+
   return (
-    <div className="menu-card">
+    <div className={`menu-card ${isOutOfStock ? 'out-of-stock' : ''}`}>
       <div className="menu-card-image">
         <img src={item.image} alt={item.name} />
         <span className={`veg-badge ${item.isVeg ? 'veg' : 'non-veg'}`}>
           {item.isVeg ? '🟢' : '🔴'}
         </span>
+        {isOutOfStock && (
+          <div className="out-of-stock-overlay">
+            <span className="out-of-stock-badge">Out of Stock</span>
+          </div>
+        )}
       </div>
       <div className="menu-card-content">
         <h3>{item.name}</h3>
@@ -33,9 +40,11 @@ const MenuCard = ({ item }) => {
           <button
             className="btn btn-primary add-btn"
             onClick={handleAddToCart}
-            disabled={!item.isAvailable}
+            disabled={!item.isAvailable || isOutOfStock}
           >
-            {item.isAvailable ? (
+            {isOutOfStock ? (
+              'Out of Stock'
+            ) : item.isAvailable ? (
               <>
                 <Plus size={16} /> Add
               </>

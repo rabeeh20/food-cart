@@ -70,7 +70,7 @@ router.get('/:id', async (req, res) => {
 // Add menu item (Super Admin only)
 router.post('/', verifySuperAdmin, async (req, res) => {
   try {
-    const { name, description, price, image, category, isVeg, isAvailable, preparationTime, tags } = req.body;
+    const { name, description, price, image, category, isVeg, isAvailable, stock, preparationTime, tags } = req.body;
 
     if (!name || !description || !price || !category) {
       return res.status(400).json({
@@ -87,6 +87,7 @@ router.post('/', verifySuperAdmin, async (req, res) => {
       category,
       isVeg,
       isAvailable,
+      stock,
       preparationTime,
       tags
     });
@@ -110,7 +111,7 @@ router.post('/', verifySuperAdmin, async (req, res) => {
 // Update menu item (Super Admin only)
 router.put('/:id', verifySuperAdmin, async (req, res) => {
   try {
-    const { name, description, price, image, category, isVeg, isAvailable, preparationTime, tags } = req.body;
+    const { name, description, price, image, category, isVeg, isAvailable, stock, preparationTime, tags } = req.body;
 
     const menuItem = await MenuItem.findById(req.params.id);
 
@@ -128,6 +129,7 @@ router.put('/:id', verifySuperAdmin, async (req, res) => {
     if (category) menuItem.category = category;
     if (isVeg !== undefined) menuItem.isVeg = isVeg;
     if (isAvailable !== undefined) menuItem.isAvailable = isAvailable;
+    if (stock !== undefined) menuItem.stock = stock;
     if (preparationTime) menuItem.preparationTime = preparationTime;
     if (tags) menuItem.tags = tags;
 

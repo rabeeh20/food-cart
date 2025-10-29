@@ -111,6 +111,24 @@
   color: #666;
 }
 
+.item-stock {
+  margin-bottom: 12px;
+}
+
+.stock-info {
+  font-size: 13px;
+  font-weight: 500;
+  color: #2b8a3e;
+}
+
+.stock-info.low-stock {
+  color: #e67700;
+}
+
+.stock-info.out-of-stock {
+  color: #c92a2a;
+}
+
 .item-actions {
   display: flex;
   gap: 10px;

@@ -46,6 +46,14 @@ router.post('/', verifyUser, async (req, res) => {
         });
       }
 
+      // Check stock availability
+      if (menuItem.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `${menuItem.name} is out of stock or insufficient quantity available`
+        });
+      }
+
       orderItems.push({
         menuItem: menuItem._id,
         name: menuItem.name,
@@ -73,16 +81,27 @@ router.post('/', verifyUser, async (req, res) => {
 
     await order.save();
 
-    // Send order confirmation email only for COD orders
-    // For Razorpay, email will be sent after payment verification
-    if (req.user.email && paymentMethod === 'cod') {
-      await sendOrderConfirmation(req.user.email, {
-        orderId: order.orderId,
-        customerName: deliveryAddress.fullName,
-        totalAmount: order.totalAmount,
-        status: 'Placed'
-      });
+    // For COD orders, reduce stock immediately and send email
+    if (paymentMethod === 'cod') {
+      // Reduce stock for each item
+      for (const item of items) {
+        await MenuItem.findByIdAndUpdate(
+          item.menuItem,
+          { $inc: { stock: -item.quantity } }
+        );
+      }
+
+      // Send order confirmation email
+      if (req.user.email) {
+        await sendOrderConfirmation(req.user.email, {
+          orderId: order.orderId,
+          customerName: deliveryAddress.fullName,
+          totalAmount: order.totalAmount,
+          status: 'Placed'
+        });
+      }
     }
+    // For Razorpay, stock will be reduced after payment verification
 
     res.status(201).json({
       success: true,
