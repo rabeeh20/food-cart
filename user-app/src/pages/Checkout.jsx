@@ -11,6 +11,7 @@ const Checkout = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
   const [loading, setLoading] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState({
     fullName: '',
@@ -166,6 +167,7 @@ const Checkout = () => {
         description: `Order ${tempOrder.orderId}`,
         order_id: orderId,
         handler: async function (response) {
+          setProcessingPayment(true);
           try {
             const verifyResponse = await paymentAPI.verifyPayment({
               razorpay_order_id: response.razorpay_order_id,
@@ -177,9 +179,12 @@ const Checkout = () => {
             if (verifyResponse.data.success) {
               clearCart();
               toast.success('Payment successful! Order placed.');
-              navigate('/orders');
+              setTimeout(() => {
+                navigate('/orders');
+              }, 1000);
             }
           } catch (error) {
+            setProcessingPayment(false);
             toast.error('Payment verification failed');
           }
         },
@@ -374,6 +379,18 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+
+      {/* Payment Processing Overlay */}
+      {processingPayment && (
+        <div className="payment-processing-overlay">
+          <div className="processing-content">
+            <div className="spinner"></div>
+            <h2>Processing Payment...</h2>
+            <p>Please wait while we confirm your payment</p>
+            <p className="processing-note">Do not close or refresh this page</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
