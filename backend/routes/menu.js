@@ -1,6 +1,6 @@
 import express from 'express';
 import MenuItem from '../models/MenuItem.js';
-import { verifyAdmin } from '../middleware/auth.js';
+import { verifySuperAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -67,8 +67,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Add menu item (Admin only)
-router.post('/', verifyAdmin, async (req, res) => {
+// Add menu item (Super Admin only)
+router.post('/', verifySuperAdmin, async (req, res) => {
   try {
     const { name, description, price, image, category, isVeg, isAvailable, preparationTime, tags } = req.body;
 
@@ -107,8 +107,8 @@ router.post('/', verifyAdmin, async (req, res) => {
   }
 });
 
-// Update menu item (Admin only)
-router.put('/:id', verifyAdmin, async (req, res) => {
+// Update menu item (Super Admin only)
+router.put('/:id', verifySuperAdmin, async (req, res) => {
   try {
     const { name, description, price, image, category, isVeg, isAvailable, preparationTime, tags } = req.body;
 
@@ -147,8 +147,8 @@ router.put('/:id', verifyAdmin, async (req, res) => {
   }
 });
 
-// Delete menu item (Admin only)
-router.delete('/:id', verifyAdmin, async (req, res) => {
+// Delete menu item (Super Admin only)
+router.delete('/:id', verifySuperAdmin, async (req, res) => {
   try {
     const menuItem = await MenuItem.findByIdAndDelete(req.params.id);
 

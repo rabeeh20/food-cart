@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
+import MenuManagement from './pages/MenuManagement';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -50,7 +51,13 @@ function App() {
                 isAuthenticated ? <Orders /> : <Navigate to="/login" />
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route
+              path="/menu"
+              element={
+                isAuthenticated ? <MenuManagement /> : <Navigate to="/login" />
+              }
+            />
+            <Route path="/" element={<Navigate to={isAuthenticated ? "/orders" : "/login"} />} />
           </Routes>
         </div>
         <Toaster position="top-right" />

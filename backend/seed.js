@@ -127,24 +127,43 @@ const seedDatabase = async () => {
     await MenuItem.deleteMany({});
     console.log('Cleared existing data');
 
-    // Create admin user
-    const admin = new Admin({
-      email: process.env.ADMIN_EMAIL || 'admin@fooddelivery.com',
-      password: process.env.ADMIN_PASSWORD || 'Admin@123',
-      name: 'Admin User'
+    // Create Super Admin
+    const superAdmin = new Admin({
+      email: process.env.SUPER_ADMIN_EMAIL || 'superadmin@fooddelivery.com',
+      password: process.env.SUPER_ADMIN_PASSWORD || 'SuperAdmin@123',
+      name: 'Super Admin',
+      role: 'super_admin'
     });
 
-    await admin.save();
-    console.log('Admin user created:', admin.email);
+    await superAdmin.save();
+    console.log('Super Admin created:', superAdmin.email);
+
+    // Create Normal Admin
+    const normalAdmin = new Admin({
+      email: process.env.ADMIN_EMAIL || 'admin@fooddelivery.com',
+      password: process.env.ADMIN_PASSWORD || 'Admin@123',
+      name: 'Admin User',
+      role: 'admin'
+    });
+
+    await normalAdmin.save();
+    console.log('Normal Admin created:', normalAdmin.email);
 
     // Create menu items
     const menuItems = await MenuItem.insertMany(sampleMenuItems);
     console.log(`${menuItems.length} menu items created`);
 
     console.log('\n=== Seed completed successfully ===');
-    console.log('\nAdmin Credentials:');
-    console.log('Email:', admin.email);
+    console.log('\n--- Super Admin Credentials ---');
+    console.log('Email:', superAdmin.email);
+    console.log('Password:', process.env.SUPER_ADMIN_PASSWORD || 'SuperAdmin@123');
+    console.log('Access: Full access (Dashboard, Orders, Menu Management)');
+
+    console.log('\n--- Normal Admin Credentials ---');
+    console.log('Email:', normalAdmin.email);
     console.log('Password:', process.env.ADMIN_PASSWORD || 'Admin@123');
+    console.log('Access: Orders management only');
+
     console.log('\nYou can now start the server with: npm run dev');
 
     process.exit(0);

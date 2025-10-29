@@ -40,9 +40,9 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Generate token
+    // Generate token with actual admin role from database
     const token = jwt.sign(
-      { id: admin._id, email: admin.email, role: 'admin' },
+      { id: admin._id, email: admin.email, role: admin.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
