@@ -94,6 +94,10 @@ router.post('/', verifySuperAdmin, async (req, res) => {
 
     await menuItem.save();
 
+    // Emit stock update event to all clients
+    const io = req.app.get('io');
+    io.emit('menu-item-added', menuItem);
+
     res.status(201).json({
       success: true,
       message: 'Menu item added successfully',
@@ -122,6 +126,8 @@ router.put('/:id', verifySuperAdmin, async (req, res) => {
       });
     }
 
+    const oldStock = menuItem.stock;
+
     if (name) menuItem.name = name;
     if (description) menuItem.description = description;
     if (price) menuItem.price = price;
@@ -134,6 +140,17 @@ router.put('/:id', verifySuperAdmin, async (req, res) => {
     if (tags) menuItem.tags = tags;
 
     await menuItem.save();
+
+    // Emit stock update event if stock changed
+    if (stock !== undefined && stock !== oldStock) {
+      const io = req.app.get('io');
+      io.emit('stock-updated', {
+        itemId: menuItem._id,
+        item: menuItem,
+        oldStock,
+        newStock: menuItem.stock
+      });
+    }
 
     res.json({
       success: true,

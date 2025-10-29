@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { menuAPI } from '../utils/api';
 import MenuCard from '../components/MenuCard';
 import toast from 'react-hot-toast';
+import { useSocket } from '../context/SocketContext';
 import './Home.css';
 
 const Home = () => {
@@ -10,11 +11,46 @@ const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [vegOnly, setVegOnly] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { socket } = useSocket();
 
   useEffect(() => {
     fetchCategories();
     fetchMenuItems();
   }, [selectedCategory, vegOnly]);
+
+  // Setup WebSocket listener for stock updates
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('stock-updated', (data) => {
+      console.log('Stock updated:', data);
+
+      // Update the specific item in the menu
+      setMenuItems(prevItems =>
+        prevItems.map(item =>
+          item._id === data.itemId ? { ...item, stock: data.item.stock } : item
+        )
+      );
+
+      // Show toast if item is out of stock
+      if (data.item.stock === 0) {
+        toast.error(`${data.item.name} is now out of stock!`, {
+          duration: 4000
+        });
+      }
+    });
+
+    socket.on('menu-item-added', (data) => {
+      console.log('New menu item added:', data);
+      // Refresh menu items
+      fetchMenuItems();
+    });
+
+    return () => {
+      socket.off('stock-updated');
+      socket.off('menu-item-added');
+    };
+  }, [socket]);
 
   const fetchCategories = async () => {
     try {

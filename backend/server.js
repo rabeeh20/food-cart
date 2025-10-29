@@ -2,6 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 
 // Load environment variables FIRST before importing routes
 dotenv.config();
@@ -14,6 +16,19 @@ import paymentRoutes from './routes/payment.js';
 import adminRoutes from './routes/admin.js';
 
 const app = express();
+const httpServer = createServer(app);
+
+// Initialize Socket.io with CORS
+const io = new Server(httpServer, {
+  cors: {
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+
+// Make io accessible to routes
+app.set('io', io);
 
 // Middleware
 app.use(cors());
@@ -48,8 +63,30 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Socket.io connection handling
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  // Join admin room
+  socket.on('join-admin', () => {
+    socket.join('admin');
+    console.log(`Socket ${socket.id} joined admin room`);
+  });
+
+  // Join user room with userId
+  socket.on('join-user', (userId) => {
+    socket.join(`user:${userId}`);
+    console.log(`Socket ${socket.id} joined user room: user:${userId}`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`WebSocket server is ready`);
 });

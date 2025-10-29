@@ -81,14 +81,31 @@ router.post('/', verifyUser, async (req, res) => {
 
     await order.save();
 
+    // Emit new order event to admin
+    const io = req.app.get('io');
+    io.to('admin').emit('new-order', {
+      order: order,
+      message: `New ${paymentMethod.toUpperCase()} order received!`
+    });
+
     // For COD orders, reduce stock immediately and send email
     if (paymentMethod === 'cod') {
       // Reduce stock for each item
       for (const item of items) {
-        await MenuItem.findByIdAndUpdate(
+        const updatedItem = await MenuItem.findByIdAndUpdate(
           item.menuItem,
-          { $inc: { stock: -item.quantity } }
+          { $inc: { stock: -item.quantity } },
+          { new: true }
         );
+
+        // Emit stock update event to all clients
+        if (updatedItem) {
+          io.emit('stock-updated', {
+            itemId: updatedItem._id,
+            item: updatedItem,
+            newStock: updatedItem.stock
+          });
+        }
       }
 
       // Send order confirmation email

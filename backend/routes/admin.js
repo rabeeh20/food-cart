@@ -194,6 +194,26 @@ router.patch('/orders/:id/status', verifyAdmin, async (req, res) => {
 
     await order.save();
 
+    // Emit order status update to all admins and specific user
+    const io = req.app.get('io');
+    const userRoom = `user:${order.user}`;
+
+    // Emit to admin room
+    io.to('admin').emit('order-updated', {
+      order: order,
+      message: `Order ${order.orderId} status changed to ${status}`
+    });
+
+    // Emit to specific user room
+    const eventData = {
+      orderId: order.orderId,
+      status: order.orderStatus,
+      message: `Your order status has been updated to ${status}`,
+      paymentStatus: order.paymentStatus
+    };
+
+    io.to(userRoom).emit('order-status-changed', eventData);
+
     res.json({
       success: true,
       message: 'Order status updated successfully',

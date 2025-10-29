@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { adminAPI } from '../utils/api';
 import toast from 'react-hot-toast';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Bell } from 'lucide-react';
+import { useSocket } from '../context/SocketContext';
 import './Orders.css';
 
 const statusOptions = ['placed', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -10,28 +11,57 @@ const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
-  const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
-  const intervalRef = useRef(null);
+  const { socket, connected } = useSocket();
+  const audioRef = useRef(null);
 
   useEffect(() => {
     fetchOrders();
   }, [filter]);
 
-  // Auto-refresh every 10 seconds
+  // Setup WebSocket listeners
   useEffect(() => {
-    if (autoRefresh) {
-      intervalRef.current = setInterval(() => {
-        fetchOrders(true); // Silent refresh
-      }, 10000); // 10 seconds
-    }
+    if (!socket) return;
+
+    // Listen for new orders
+    socket.on('new-order', (data) => {
+      console.log('New order received:', data);
+
+      // Play notification sound
+      if (audioRef.current) {
+        audioRef.current.play().catch(err => console.log('Audio play failed:', err));
+      }
+
+      // Show toast notification
+      toast.success(data.message, {
+        icon: '🔔',
+        duration: 5000
+      });
+
+      // Refresh orders list
+      fetchOrders(true);
+    });
+
+    // Listen for order updates
+    socket.on('order-updated', (data) => {
+      console.log('Order updated:', data);
+
+      // Update the specific order in the list
+      setOrders(prevOrders => {
+        const updatedOrders = prevOrders.map(order =>
+          order._id === data.order._id ? data.order : order
+        );
+        return updatedOrders;
+      });
+
+      setLastRefresh(new Date());
+    });
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      socket.off('new-order');
+      socket.off('order-updated');
     };
-  }, [autoRefresh, filter]);
+  }, [socket]);
 
   const fetchOrders = async (silent = false) => {
     if (!silent) {
@@ -105,19 +135,18 @@ const Orders = () => {
               Refresh
             </button>
 
-            <label className="auto-refresh-toggle">
-              <input
-                type="checkbox"
-                checked={autoRefresh}
-                onChange={(e) => setAutoRefresh(e.target.checked)}
-              />
-              <span>Auto-refresh (10s)</span>
-            </label>
+            <span className={`connection-status ${connected ? 'connected' : 'disconnected'}`}>
+              <Bell size={14} />
+              {connected ? 'Live' : 'Offline'}
+            </span>
 
             <span className="last-refresh">
               Last updated: {lastRefresh.toLocaleTimeString()}
             </span>
           </div>
+
+          {/* Hidden audio element for notifications */}
+          <audio ref={audioRef} src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG" preload="auto" />
         </div>
       </div>
 

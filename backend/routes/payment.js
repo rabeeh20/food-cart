@@ -125,12 +125,34 @@ router.post('/verify-payment', verifyUser, async (req, res) => {
     ).populate('items.menuItem');
 
     // Reduce stock for each item after successful payment
+    const io = req.app.get('io');
     for (const item of order.items) {
-      await MenuItem.findByIdAndUpdate(
+      const updatedItem = await MenuItem.findByIdAndUpdate(
         item.menuItem._id,
-        { $inc: { stock: -item.quantity } }
+        { $inc: { stock: -item.quantity } },
+        { new: true }
       );
+
+      // Emit stock update event to all clients
+      if (updatedItem) {
+        io.emit('stock-updated', {
+          itemId: updatedItem._id,
+          item: updatedItem,
+          newStock: updatedItem.stock
+        });
+      }
     }
+
+    // Emit order status update to admins and specific user
+    io.to('admin').emit('order-updated', {
+      order: order,
+      message: 'Order payment confirmed'
+    });
+    io.to(`user:${order.user}`).emit('order-status-changed', {
+      orderId: order.orderId,
+      status: order.orderStatus,
+      paymentStatus: order.paymentStatus
+    });
 
     // Send order confirmation email after successful payment
     if (req.user.email) {

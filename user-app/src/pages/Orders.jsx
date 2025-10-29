@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderAPI } from '../utils/api';
 import toast from 'react-hot-toast';
+import { useSocket } from '../context/SocketContext';
 import './Orders.css';
 
 const statusColors = {
@@ -14,14 +15,67 @@ const statusColors = {
   cancelled: 'danger'
 };
 
+const statusMessages = {
+  placed: 'Order placed successfully',
+  confirmed: 'Order confirmed',
+  preparing: 'Your food is being prepared',
+  ready: 'Your order is ready',
+  out_for_delivery: 'Your order is on the way',
+  delivered: 'Order delivered',
+  cancelled: 'Order cancelled'
+};
+
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { socket, connected } = useSocket();
 
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  // Setup WebSocket listener for order status updates
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    socket.on('order-status-changed', (data) => {
+      // Update the specific order in the list
+      setOrders(prevOrders => {
+        return prevOrders.map(order => {
+          if (order.orderId === data.orderId) {
+            return { ...order, orderStatus: data.status, paymentStatus: data.paymentStatus || order.paymentStatus };
+          }
+          return order;
+        });
+      });
+
+      // Show toast notification with appropriate message
+      const message = data.message || statusMessages[data.status] || 'Order status updated';
+
+      if (data.status === 'delivered') {
+        toast.success(message, {
+          icon: '🎉',
+          duration: 5000
+        });
+      } else if (data.status === 'cancelled') {
+        toast.error(message, {
+          duration: 5000
+        });
+      } else {
+        toast.success(message, {
+          icon: '📦',
+          duration: 4000
+        });
+      }
+    });
+
+    return () => {
+      socket.off('order-status-changed');
+    };
+  }, [socket]);
 
   const fetchOrders = async () => {
     try {
@@ -66,7 +120,15 @@ const Orders = () => {
 
   return (
     <div className="container orders-page">
-      <h1>My Orders</h1>
+      <div className="orders-header">
+        <h1>My Orders</h1>
+        {connected && (
+          <span className="live-indicator">
+            <span className="live-dot"></span>
+            Live Updates
+          </span>
+        )}
+      </div>
       <div className="orders-list">
         {orders.map((order) => (
           <div key={order._id} className="order-card card">

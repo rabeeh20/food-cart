@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
 import MenuManagement from './pages/MenuManagement';
+import { SocketProvider } from './context/SocketContext';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -25,43 +26,45 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
-        {isAuthenticated && <Navbar setIsAuthenticated={setIsAuthenticated} />}
-        <div className="container">
-          <Routes>
-            <Route
-              path="/login"
-              element={
-                isAuthenticated ? (
-                  <Navigate to="/dashboard" />
-                ) : (
-                  <Login setIsAuthenticated={setIsAuthenticated} />
-                )
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                isAuthenticated ? <Dashboard /> : <Navigate to="/login" />
-              }
-            />
-            <Route
-              path="/orders"
-              element={
-                isAuthenticated ? <Orders /> : <Navigate to="/login" />
-              }
-            />
-            <Route
-              path="/menu"
-              element={
-                isAuthenticated ? <MenuManagement /> : <Navigate to="/login" />
-              }
-            />
-            <Route path="/" element={<Navigate to={isAuthenticated ? "/orders" : "/login"} />} />
-          </Routes>
+      <SocketProvider>
+        <div className="App">
+          {isAuthenticated && <Navbar setIsAuthenticated={setIsAuthenticated} />}
+          <div className="container">
+            <Routes>
+              <Route
+                path="/login"
+                element={
+                  isAuthenticated ? (
+                    <Navigate to="/dashboard" />
+                  ) : (
+                    <Login setIsAuthenticated={setIsAuthenticated} />
+                  )
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  isAuthenticated ? <Dashboard /> : <Navigate to="/login" />
+                }
+              />
+              <Route
+                path="/orders"
+                element={
+                  isAuthenticated ? <Orders /> : <Navigate to="/login" />
+                }
+              />
+              <Route
+                path="/menu"
+                element={
+                  isAuthenticated ? <MenuManagement /> : <Navigate to="/login" />
+                }
+              />
+              <Route path="/" element={<Navigate to={isAuthenticated ? "/orders" : "/login"} />} />
+            </Routes>
+          </div>
+          <Toaster position="top-right" />
         </div>
-        <Toaster position="top-right" />
-      </div>
+      </SocketProvider>
     </Router>
   );
 }
