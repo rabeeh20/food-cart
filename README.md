@@ -319,6 +319,46 @@ cd admin-app
 npm run build
 ```
 
+## AWS EC2 Deployment
+
+### Option 1: IP-Only Deployment (No Domain Required) 🚀
+
+**Fastest way to get started - no domain needed!**
+
+⚡ **[Quick Start IP-Only](QUICK-START-IP-ONLY.md)** - Deploy in 15 minutes
+
+📖 **[Complete IP-Only Guide](DEPLOYMENT-GUIDE-IP-ONLY.md)** - Detailed instructions
+
+**Your apps will be at:**
+- User App: `http://YOUR_EC2_IP/`
+- Admin App: `http://YOUR_EC2_IP/admin`
+
+**Perfect for:** Testing, demos, learning, or when you don't have a domain
+
+---
+
+### Option 2: Domain-Based Deployment with SSL 🔒
+
+**For production with custom domain:**
+
+📖 **[Complete AWS Deployment Guide](AWS-DEPLOYMENT-GUIDE.md)** - Full guide with SSL
+
+✅ **[Deployment Checklist](DEPLOYMENT-CHECKLIST.md)** - Ensure nothing is missed
+
+**Features:** Custom domain, SSL/HTTPS, professional setup
+
+---
+
+### Deployment Features
+
+- ✅ PM2 process management with auto-restart
+- ✅ Nginx reverse proxy with WebSocket support
+- ✅ SSL/HTTPS with Let's Encrypt (domain-based)
+- ✅ Production-ready CORS configuration
+- ✅ Automatic deployment scripts included
+- ✅ Log rotation and monitoring
+- ✅ Works with or without custom domain
+
 ## License
 
 MIT

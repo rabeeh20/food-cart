@@ -19,9 +19,13 @@ const app = express();
 const httpServer = createServer(app);
 
 // Initialize Socket.io with CORS
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? [process.env.USER_APP_URL, process.env.ADMIN_APP_URL]
+  : ['http://localhost:5173', 'http://localhost:5174'];
+
 const io = new Server(httpServer, {
   cors: {
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -31,7 +35,10 @@ const io = new Server(httpServer, {
 app.set('io', io);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
