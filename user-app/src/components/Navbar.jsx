@@ -14,6 +14,11 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+    setShowMenu(false);
+  };
+
+  const closeMenu = () => {
+    setShowMenu(false);
   };
 
   const cartCount = getCartCount();
@@ -31,12 +36,12 @@ const Navbar = () => {
           </button>
 
           <div className={`navbar-menu ${showMenu ? 'active' : ''}`}>
-            <Link to="/" className="nav-link">Menu</Link>
+            <Link to="/" className="nav-link" onClick={closeMenu}>Menu</Link>
             {user && (
               <>
-                <Link to="/orders" className="nav-link">My Orders</Link>
-                <Link to="/addresses" className="nav-link">Addresses</Link>
-                <Link to="/cart" className="nav-link cart-link">
+                <Link to="/orders" className="nav-link" onClick={closeMenu}>My Orders</Link>
+                <Link to="/addresses" className="nav-link" onClick={closeMenu}>Addresses</Link>
+                <Link to="/cart" className="nav-link cart-link" onClick={closeMenu}>
                   <ShoppingCart size={20} />
                   {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
                 </Link>
@@ -51,7 +56,7 @@ const Navbar = () => {
               </>
             )}
             {!user && (
-              <Link to="/login" className="btn btn-primary">Login</Link>
+              <Link to="/login" className="btn btn-primary" onClick={closeMenu}>Login</Link>
             )}
           </div>
         </div>
