@@ -239,6 +239,60 @@
   border-top: 1px solid #eee;
 }
 
+/* Image Upload Styles */
+.file-input {
+  width: 100%;
+  padding: 10px;
+  border: 2px dashed #ddd;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.file-input:hover {
+  border-color: var(--primary-color);
+}
+
+.help-text {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+.image-preview-container {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.image-preview {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  border-radius: var(--border-radius);
+  border: 2px solid #eee;
+  object-fit: cover;
+}
+
+.upload-status {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: var(--border-radius);
+  font-size: 13px;
+  text-align: center;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
 @media (max-width: 768px) {
   .menu-grid {
     grid-template-columns: 1fr;
@@ -252,5 +306,9 @@
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .image-preview {
+    max-width: 100%;
   }
 }

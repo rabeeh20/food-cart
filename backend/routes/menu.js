@@ -1,6 +1,8 @@
 import express from 'express';
 import MenuItem from '../models/MenuItem.js';
 import { verifySuperAdmin } from '../middleware/auth.js';
+import upload from '../middleware/upload.js';
+import cloudinary from '../config/cloudinary.js';
 
 const router = express.Router();
 
@@ -63,6 +65,56 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error. Please try again later.'
+    });
+  }
+});
+
+// Upload image to Cloudinary (Super Admin only)
+router.post('/upload-image', verifySuperAdmin, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
+      });
+    }
+
+    // Upload image buffer to Cloudinary
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'food-delivery/menu-items',
+        resource_type: 'image',
+        transformation: [
+          { width: 800, height: 600, crop: 'limit' },
+          { quality: 'auto' },
+          { fetch_format: 'auto' }
+        ]
+      },
+      (error, result) => {
+        if (error) {
+          console.error('Cloudinary upload error:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to upload image'
+          });
+        }
+
+        res.json({
+          success: true,
+          imageUrl: result.secure_url,
+          publicId: result.public_id
+        });
+      }
+    );
+
+    // Write buffer to upload stream
+    uploadStream.end(req.file.buffer);
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during image upload'
     });
   }
 });

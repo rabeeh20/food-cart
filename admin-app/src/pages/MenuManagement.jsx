@@ -23,6 +23,9 @@ const MenuManagement = () => {
     image: '',
     tags: ''
   });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchMenuItems();
@@ -44,18 +47,81 @@ const MenuManagement = () => {
     }
   };
 
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Image size should be less than 5MB');
+        return;
+      }
+      setSelectedImage(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!selectedImage) return formData.image;
+
+    setUploading(true);
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('image', selectedImage);
+
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/upload-image`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formDataToSend
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Image uploaded successfully!');
+        return data.imageUrl;
+      } else {
+        throw new Error(data.message || 'Upload failed');
+      }
+    } catch (error) {
+      toast.error('Failed to upload image');
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const data = {
-      ...formData,
-      price: parseFloat(formData.price),
-      stock: parseInt(formData.stock),
-      preparationTime: parseInt(formData.preparationTime),
-      tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : []
-    };
-
     try {
+      // Upload image first if a new image is selected
+      let imageUrl = formData.image;
+      if (selectedImage) {
+        imageUrl = await uploadImage();
+      }
+
+      const data = {
+        ...formData,
+        image: imageUrl,
+        price: parseFloat(formData.price),
+        stock: parseInt(formData.stock),
+        preparationTime: parseInt(formData.preparationTime),
+        tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : []
+      };
+
       if (editingItem) {
         const response = await menuAPI.update(editingItem._id, data);
         if (response.data.success) {
@@ -77,6 +143,8 @@ const MenuManagement = () => {
   const handleEdit = (item) => {
     console.log('Edit clicked for item:', item);
     setEditingItem(item);
+    setSelectedImage(null);
+    setImagePreview('');
     setFormData({
       name: item.name,
       description: item.description,
@@ -108,6 +176,8 @@ const MenuManagement = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingItem(null);
+    setSelectedImage(null);
+    setImagePreview('');
     setFormData({
       name: '',
       description: '',
@@ -263,13 +333,41 @@ const MenuManagement = () => {
               </div>
 
               <div className="input-group">
-                <label>Image URL</label>
+                <label>Menu Item Image</label>
                 <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData({...formData, image: e.target.value})}
-                  placeholder="https://example.com/image.jpg"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="file-input"
                 />
+                <small className="help-text">Max size: 5MB. Formats: JPG, PNG, GIF, WEBP</small>
+
+                {(imagePreview || formData.image) && (
+                  <div className="image-preview-container">
+                    <img
+                      src={imagePreview || formData.image}
+                      alt="Preview"
+                      className="image-preview"
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={() => {
+                        setSelectedImage(null);
+                        setImagePreview('');
+                        setFormData({...formData, image: ''});
+                      }}
+                    >
+                      Remove Image
+                    </button>
+                  </div>
+                )}
+
+                {uploading && (
+                  <div className="upload-status">
+                    <span>Uploading image...</span>
+                  </div>
+                )}
               </div>
 
               <div className="input-group">
