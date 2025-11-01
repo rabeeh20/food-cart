@@ -53,12 +53,18 @@ const CartSidebar = () => {
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             <div className="cart-item-info">
-              <div className="cart-item-veg-badge">
-                {item.isVeg ? '🟢' : '🔴'}
+              <div className="cart-item-image">
+                <img src={item.image} alt={item.name} />
+                <div className="cart-item-veg-badge">
+                  {item.isVeg ? '🟢' : '🔴'}
+                </div>
               </div>
               <div className="cart-item-details">
                 <h4>{item.name}</h4>
-                <p className="cart-item-price">₹{item.price}</p>
+                <div className="cart-item-price-row">
+                  <span className="cart-item-price">₹{item.price}</span>
+                  <span className="cart-item-quantity-text">× {item.quantity}</span>
+                </div>
               </div>
             </div>
 
