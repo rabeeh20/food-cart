@@ -5,9 +5,14 @@
 
 .home-layout {
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: 1fr;
   gap: 32px;
   align-items: start;
+  transition: grid-template-columns 0.3s ease;
+}
+
+.home-layout.has-cart {
+  grid-template-columns: 1fr 350px;
 }
 
 .home-main-content {
@@ -128,7 +133,8 @@
 
 /* Mobile Responsiveness */
 @media (max-width: 1024px) {
-  .home-layout {
+  .home-layout,
+  .home-layout.has-cart {
     grid-template-columns: 1fr;
   }
 }

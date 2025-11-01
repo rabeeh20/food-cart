@@ -4,6 +4,7 @@ import MenuCard from '../components/MenuCard';
 import PromoBanner from '../components/PromoBanner';
 import CategoryCard from '../components/CategoryCard';
 import CartSidebar from '../components/CartSidebar';
+import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 import { useSocket } from '../context/SocketContext';
 import './Home.css';
@@ -15,6 +16,7 @@ const Home = () => {
   const [vegOnly, setVegOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const { socket } = useSocket();
+  const { cart } = useCart();
 
   useEffect(() => {
     fetchCategories();
@@ -84,10 +86,12 @@ const Home = () => {
     }
   };
 
+  const hasCartItems = cart.length > 0;
+
   return (
     <div className="home-page">
       <div className="container">
-        <div className="home-layout">
+        <div className={`home-layout ${hasCartItems ? 'has-cart' : ''}`}>
           {/* Main Content */}
           <div className="home-main-content">
             {/* Promotional Banner */}
@@ -143,8 +147,8 @@ const Home = () => {
             )}
           </div>
 
-          {/* Cart Sidebar */}
-          <CartSidebar />
+          {/* Cart Sidebar - Only show when cart has items */}
+          {hasCartItems && <CartSidebar />}
         </div>
       </div>
     </div>
