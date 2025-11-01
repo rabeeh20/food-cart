@@ -3,6 +3,17 @@
   min-height: 100vh;
 }
 
+.home-layout {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 32px;
+  align-items: start;
+}
+
+.home-main-content {
+  min-width: 0;
+}
+
 /* Section Titles */
 .section-title {
   font-size: 28px;
@@ -116,6 +127,12 @@
 }
 
 /* Mobile Responsiveness */
+@media (max-width: 1024px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .home-page {
     padding: 20px 0;

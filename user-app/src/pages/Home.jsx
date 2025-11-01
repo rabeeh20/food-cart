@@ -3,6 +3,7 @@ import { menuAPI } from '../utils/api';
 import MenuCard from '../components/MenuCard';
 import PromoBanner from '../components/PromoBanner';
 import CategoryCard from '../components/CategoryCard';
+import CartSidebar from '../components/CartSidebar';
 import toast from 'react-hot-toast';
 import { useSocket } from '../context/SocketContext';
 import './Home.css';
@@ -86,57 +87,65 @@ const Home = () => {
   return (
     <div className="home-page">
       <div className="container">
-        {/* Promotional Banner */}
-        <PromoBanner />
+        <div className="home-layout">
+          {/* Main Content */}
+          <div className="home-main-content">
+            {/* Promotional Banner */}
+            <PromoBanner />
 
-        {/* Category Section */}
-        <div className="category-section">
-          <h2 className="section-title">Category</h2>
-          <div className="category-grid">
-            <CategoryCard
-              category="All"
-              isActive={selectedCategory === ''}
-              onClick={() => setSelectedCategory('')}
-            />
-            {categories.map((cat) => (
-              <CategoryCard
-                key={cat}
-                category={cat}
-                isActive={selectedCategory === cat}
-                onClick={() => setSelectedCategory(cat)}
-              />
-            ))}
+            {/* Category Section */}
+            <div className="category-section">
+              <h2 className="section-title">Category</h2>
+              <div className="category-grid">
+                <CategoryCard
+                  category="All"
+                  isActive={selectedCategory === ''}
+                  onClick={() => setSelectedCategory('')}
+                />
+                {categories.map((cat) => (
+                  <CategoryCard
+                    key={cat}
+                    category={cat}
+                    isActive={selectedCategory === cat}
+                    onClick={() => setSelectedCategory(cat)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="filters-section">
+              <div className="section-header">
+                <h2 className="section-title">Popular Dishes</h2>
+                <label className="veg-filter">
+                  <input
+                    type="checkbox"
+                    checked={vegOnly}
+                    onChange={(e) => setVegOnly(e.target.checked)}
+                  />
+                  <span>🟢 Veg Only</span>
+                </label>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="loading">Loading menu...</div>
+            ) : menuItems.length === 0 ? (
+              <div className="no-items">
+                <p>No items found</p>
+              </div>
+            ) : (
+              <div className="menu-grid grid grid-3">
+                {menuItems.map((item) => (
+                  <MenuCard key={item._id} item={item} />
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Cart Sidebar */}
+          <CartSidebar />
         </div>
-
-        {/* Filters */}
-        <div className="filters-section">
-          <div className="section-header">
-            <h2 className="section-title">Popular Dishes</h2>
-            <label className="veg-filter">
-              <input
-                type="checkbox"
-                checked={vegOnly}
-                onChange={(e) => setVegOnly(e.target.checked)}
-              />
-              <span>🟢 Veg Only</span>
-            </label>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="loading">Loading menu...</div>
-        ) : menuItems.length === 0 ? (
-          <div className="no-items">
-            <p>No items found</p>
-          </div>
-        ) : (
-          <div className="menu-grid grid grid-3">
-            {menuItems.map((item) => (
-              <MenuCard key={item._id} item={item} />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
