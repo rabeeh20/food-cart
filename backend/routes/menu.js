@@ -122,7 +122,7 @@ router.post('/upload-image', verifySuperAdmin, upload.single('image'), async (re
 // Add menu item (Super Admin only)
 router.post('/', verifySuperAdmin, async (req, res) => {
   try {
-    const { name, description, price, image, category, isVeg, isAvailable, stock, preparationTime, tags } = req.body;
+    const { name, description, price, image, category, isVeg, isAvailable, stock, preparationTime, tags, discount } = req.body;
 
     if (!name || !description || !price || !category) {
       return res.status(400).json({
@@ -141,7 +141,8 @@ router.post('/', verifySuperAdmin, async (req, res) => {
       isAvailable,
       stock,
       preparationTime,
-      tags
+      tags,
+      discount
     });
 
     await menuItem.save();
@@ -167,7 +168,7 @@ router.post('/', verifySuperAdmin, async (req, res) => {
 // Update menu item (Super Admin only)
 router.put('/:id', verifySuperAdmin, async (req, res) => {
   try {
-    const { name, description, price, image, category, isVeg, isAvailable, stock, preparationTime, tags } = req.body;
+    const { name, description, price, image, category, isVeg, isAvailable, stock, preparationTime, tags, discount } = req.body;
 
     const menuItem = await MenuItem.findById(req.params.id);
 
@@ -190,6 +191,7 @@ router.put('/:id', verifySuperAdmin, async (req, res) => {
     if (stock !== undefined) menuItem.stock = stock;
     if (preparationTime) menuItem.preparationTime = preparationTime;
     if (tags) menuItem.tags = tags;
+    if (discount !== undefined) menuItem.discount = discount;
 
     await menuItem.save();
 
