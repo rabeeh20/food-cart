@@ -52,46 +52,41 @@ const CartSidebar = () => {
             className={`cart-sidebar-item ${removingItems.has(item._id) ? 'removing' : ''}`}
             style={{ animationDelay: `${index * 0.05}s` }}
           >
-            <div className="cart-item-info">
-              <div className="cart-item-image">
-                <img src={item.image} alt={item.name} />
-                <div className="cart-item-veg-badge">
-                  {item.isVeg ? '🟢' : '🔴'}
-                </div>
-              </div>
-              <div className="cart-item-details">
-                <h4>{item.name}</h4>
-                <div className="cart-item-price-row">
-                  <span className="cart-item-price">₹{item.price}</span>
-                  <span className="cart-item-quantity-text">× {item.quantity}</span>
-                </div>
+            <div className="cart-item-image">
+              <img src={item.image} alt={item.name} />
+              <div className="cart-item-veg-badge">
+                {item.isVeg ? '🟢' : '🔴'}
               </div>
             </div>
 
-            <div className="cart-item-actions">
-              <div className="cart-quantity-control">
-                <button
-                  onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                  className="quantity-btn"
-                >
-                  <Minus size={14} />
-                </button>
-                <span className="quantity">{item.quantity}</span>
-                <button
-                  onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                  className="quantity-btn"
-                >
-                  <Plus size={14} />
-                </button>
-              </div>
+            <div className="cart-item-details">
+              <h4>{item.name}</h4>
+              <span className="cart-item-price">₹{item.price}</span>
+            </div>
+
+            <div className="cart-quantity-control">
               <button
-                onClick={() => handleRemoveItem(item._id)}
-                className="remove-btn"
-                title="Remove item"
+                onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                className="quantity-btn"
               >
-                <Trash2 size={16} />
+                <Minus size={14} />
+              </button>
+              <span className="quantity">{item.quantity}</span>
+              <button
+                onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                className="quantity-btn"
+              >
+                <Plus size={14} />
               </button>
             </div>
+
+            <button
+              onClick={() => handleRemoveItem(item._id)}
+              className="remove-btn"
+              title="Remove item"
+            >
+              <Trash2 size={14} />
+            </button>
           </div>
         ))}
       </div>
