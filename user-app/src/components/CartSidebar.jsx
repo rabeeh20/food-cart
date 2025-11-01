@@ -85,7 +85,7 @@ const CartSidebar = () => {
               className="remove-btn"
               title="Remove item"
             >
-              <Trash2 size={14} />
+              <Trash2 size={16} />
             </button>
           </div>
         ))}

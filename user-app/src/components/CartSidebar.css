@@ -66,6 +66,7 @@
   overflow-y: auto;
   margin-bottom: 12px;
   max-height: calc(100vh - 340px);
+  min-height: 140px;
 }
 
 /* Custom scrollbar for cart items */
@@ -228,8 +229,8 @@
   background: transparent;
   border: 1px solid #fee;
   border-radius: 4px;
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
