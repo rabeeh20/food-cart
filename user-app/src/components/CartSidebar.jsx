@@ -107,12 +107,14 @@ const CartSidebar = () => {
           </div>
         </div>
 
-        <button
-          className="checkout-btn"
-          onClick={() => navigate('/checkout')}
-        >
-          Proceed to Checkout
-        </button>
+        <div className="checkout-btn-container">
+          <button
+            className="checkout-btn"
+            onClick={() => navigate('/checkout')}
+          >
+            Proceed to Checkout
+          </button>
+        </div>
       </div>
     </div>
   );

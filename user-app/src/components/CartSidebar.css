@@ -288,6 +288,16 @@
   border: 1px solid #f0f0f0;
   flex-shrink: 0;
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkout-btn-container {
+  background: white;
+  padding: 8px;
+  border-radius: var(--border-radius);
+  border: 1px solid #e5e5e5;
 }
 
 .checkout-btn {
