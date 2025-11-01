@@ -281,10 +281,10 @@
 }
 
 .cart-sidebar-checkout {
-  background: #fafafa;
+  background: transparent;
   padding: 6px;
-  border-radius: 6px;
-  border: 1px solid #eee;
+  border-radius: 0;
+  border: none;
   flex-shrink: 0;
   margin-top: auto;
   display: flex;
