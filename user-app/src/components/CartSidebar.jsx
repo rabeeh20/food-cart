@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { ShoppingBag, Plus, Minus, Trash2 } from 'lucide-react';
@@ -7,6 +7,29 @@ import './CartSidebar.css';
 const CartSidebar = () => {
   const navigate = useNavigate();
   const { cart, updateQuantity, removeFromCart, getCartTotal, getCartCount } = useCart();
+  const [isVisible, setIsVisible] = useState(false);
+  const [removingItems, setRemovingItems] = useState(new Set());
+
+  useEffect(() => {
+    if (cart.length > 0) {
+      // Delay to trigger animation
+      setTimeout(() => setIsVisible(true), 50);
+    } else {
+      setIsVisible(false);
+    }
+  }, [cart.length]);
+
+  const handleRemoveItem = (itemId) => {
+    setRemovingItems(prev => new Set(prev).add(itemId));
+    setTimeout(() => {
+      removeFromCart(itemId);
+      setRemovingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    }, 300);
+  };
 
   if (cart.length === 0) return null;
 
@@ -15,7 +38,7 @@ const CartSidebar = () => {
   const grandTotal = total + deliveryFee;
 
   return (
-    <div className="cart-sidebar">
+    <div className={`cart-sidebar ${isVisible ? 'cart-sidebar-visible' : ''}`}>
       <div className="cart-sidebar-header">
         <ShoppingBag size={20} />
         <h3>Your Cart</h3>
@@ -23,8 +46,12 @@ const CartSidebar = () => {
       </div>
 
       <div className="cart-sidebar-items">
-        {cart.map((item) => (
-          <div key={item._id} className="cart-sidebar-item">
+        {cart.map((item, index) => (
+          <div
+            key={item._id}
+            className={`cart-sidebar-item ${removingItems.has(item._id) ? 'removing' : ''}`}
+            style={{ animationDelay: `${index * 0.05}s` }}
+          >
             <div className="cart-item-info">
               <div className="cart-item-veg-badge">
                 {item.isVeg ? '🟢' : '🔴'}
@@ -52,7 +79,7 @@ const CartSidebar = () => {
                 </button>
               </div>
               <button
-                onClick={() => removeFromCart(item._id)}
+                onClick={() => handleRemoveItem(item._id)}
                 className="remove-btn"
                 title="Remove item"
               >
