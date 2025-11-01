@@ -91,27 +91,29 @@ const CartSidebar = () => {
         ))}
       </div>
 
-      <div className="cart-sidebar-summary">
-        <div className="summary-row">
-          <span>Subtotal</span>
-          <span>₹{total}</span>
+      <div className="cart-sidebar-checkout">
+        <div className="cart-sidebar-summary">
+          <div className="summary-row">
+            <span>Subtotal</span>
+            <span>₹{total}</span>
+          </div>
+          <div className="summary-row">
+            <span>Delivery Fee</span>
+            <span>₹{deliveryFee}</span>
+          </div>
+          <div className="summary-row total">
+            <span>Total</span>
+            <span>₹{grandTotal}</span>
+          </div>
         </div>
-        <div className="summary-row">
-          <span>Delivery Fee</span>
-          <span>₹{deliveryFee}</span>
-        </div>
-        <div className="summary-row total">
-          <span>Total</span>
-          <span>₹{grandTotal}</span>
-        </div>
-      </div>
 
-      <button
-        className="checkout-btn"
-        onClick={() => navigate('/checkout')}
-      >
-        Proceed to Checkout
-      </button>
+        <button
+          className="checkout-btn"
+          onClick={() => navigate('/checkout')}
+        >
+          Proceed to Checkout
+        </button>
+      </div>
     </div>
   );
 };
