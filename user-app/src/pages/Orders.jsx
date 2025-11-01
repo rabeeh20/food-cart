@@ -106,8 +106,8 @@ const Orders = () => {
 
   if (orders.length === 0) {
     return (
-      <div className="container" style={{ minHeight: '60vh', paddingTop: '60px' }}>
-        <div className="empty-cart">
+      <div className="container orders-page">
+        <div className="empty-orders">
           <h2>No orders yet</h2>
           <p>Start ordering to see your order history!</p>
           <button className="btn btn-primary" onClick={() => navigate('/')}>

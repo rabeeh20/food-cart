@@ -1,0 +1,24 @@
+.rating-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star-filled {
+  color: var(--primary-color);
+}
+
+.star-empty {
+  color: #E0E0E0;
+}
+
+.rating-number {
+  font-size: 14px;
+  color: var(--text-medium);
+  font-weight: 500;
+}

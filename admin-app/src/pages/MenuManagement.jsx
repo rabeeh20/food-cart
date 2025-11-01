@@ -21,7 +21,11 @@ const MenuManagement = () => {
     stock: 100,
     preparationTime: 30,
     image: '',
-    tags: ''
+    tags: '',
+    discountEnabled: false,
+    discountType: 'percentage',
+    discountValue: 0,
+    discountLabel: ''
   });
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
@@ -119,8 +123,20 @@ const MenuManagement = () => {
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
         preparationTime: parseInt(formData.preparationTime),
-        tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : []
+        tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
+        discount: {
+          enabled: formData.discountEnabled,
+          type: formData.discountType,
+          value: parseFloat(formData.discountValue) || 0,
+          label: formData.discountLabel || ''
+        }
       };
+
+      // Remove discount fields from top level
+      delete data.discountEnabled;
+      delete data.discountType;
+      delete data.discountValue;
+      delete data.discountLabel;
 
       if (editingItem) {
         const response = await menuAPI.update(editingItem._id, data);
@@ -155,7 +171,11 @@ const MenuManagement = () => {
       stock: item.stock || 100,
       preparationTime: item.preparationTime,
       image: item.image || '',
-      tags: item.tags?.join(', ') || ''
+      tags: item.tags?.join(', ') || '',
+      discountEnabled: item.discount?.enabled || false,
+      discountType: item.discount?.type || 'percentage',
+      discountValue: item.discount?.value || 0,
+      discountLabel: item.discount?.label || ''
     });
     setShowModal(true);
     console.log('Modal should be shown, showModal:', true);
@@ -188,7 +208,11 @@ const MenuManagement = () => {
       stock: 100,
       preparationTime: 30,
       image: '',
-      tags: ''
+      tags: '',
+      discountEnabled: false,
+      discountType: 'percentage',
+      discountValue: 0,
+      discountLabel: ''
     });
   };
 
@@ -379,6 +403,58 @@ const MenuManagement = () => {
                   placeholder="Popular, Spicy, Bestseller"
                 />
               </div>
+
+              <div className="input-group discount-toggle">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={formData.discountEnabled}
+                    onChange={(e) => setFormData({...formData, discountEnabled: e.target.checked})}
+                  />
+                  <span>Enable Discount Badge</span>
+                </label>
+              </div>
+
+              {formData.discountEnabled && (
+                <div className="discount-section">
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label>Discount Type</label>
+                      <select
+                        value={formData.discountType}
+                        onChange={(e) => setFormData({...formData, discountType: e.target.value})}
+                      >
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount (₹)</option>
+                      </select>
+                    </div>
+
+                    <div className="input-group">
+                      <label>Discount Value</label>
+                      <input
+                        type="number"
+                        value={formData.discountValue}
+                        onChange={(e) => setFormData({...formData, discountValue: e.target.value})}
+                        placeholder={formData.discountType === 'percentage' ? '20' : '50'}
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="input-group">
+                    <label>Custom Badge Label (Optional)</label>
+                    <input
+                      type="text"
+                      value={formData.discountLabel}
+                      onChange={(e) => setFormData({...formData, discountLabel: e.target.value})}
+                      placeholder="e.g., SALE, HOT DEAL (leave empty for auto: '20% OFF')"
+                    />
+                    <small className="help-text">
+                      Leave empty to auto-generate label like "20% OFF" or "₹50 OFF"
+                    </small>
+                  </div>
+                </div>
+              )}
 
               <div className="checkbox-group">
                 <label>

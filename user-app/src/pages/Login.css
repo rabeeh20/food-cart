@@ -1,10 +1,10 @@
 .login-page {
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 80px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(255, 87, 34, 0.1) 100%);
 }
 
 .login-container {
@@ -14,21 +14,24 @@
 
 .login-card {
   background: white;
-  border-radius: 12px;
-  padding: 40px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-lg);
+  padding: 48px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .login-card h1 {
   text-align: center;
   color: var(--dark-color);
-  margin-bottom: 10px;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 12px;
 }
 
 .subtitle {
   text-align: center;
-  color: #666;
-  margin-bottom: 30px;
+  color: var(--text-medium);
+  font-size: 16px;
+  margin-bottom: 40px;
 }
 
 .btn-block {
@@ -36,6 +39,16 @@
 }
 
 .login-card small {
-  color: #666;
-  font-size: 13px;
+  color: var(--text-medium);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .login-card {
+    padding: 32px 24px;
+  }
+
+  .login-card h1 {
+    font-size: 28px;
+  }
 }

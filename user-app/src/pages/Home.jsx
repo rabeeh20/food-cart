@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { menuAPI } from '../utils/api';
 import MenuCard from '../components/MenuCard';
+import PromoBanner from '../components/PromoBanner';
+import CategoryCard from '../components/CategoryCard';
 import toast from 'react-hot-toast';
 import { useSocket } from '../context/SocketContext';
 import './Home.css';
@@ -83,36 +85,41 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      <div className="hero-section">
-        <div className="container">
-          <h1>Delicious Food Delivered to Your Door</h1>
-          <p>Order from our wide selection of mouth-watering dishes</p>
-        </div>
-      </div>
-
       <div className="container">
-        <div className="filters-section">
-          <div className="filter-group">
-            <label>Category:</label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
+        {/* Promotional Banner */}
+        <PromoBanner />
 
-          <div className="filter-group">
-            <label className="checkbox-label">
+        {/* Category Section */}
+        <div className="category-section">
+          <h2 className="section-title">Category</h2>
+          <div className="category-grid">
+            <CategoryCard
+              category="All"
+              isActive={selectedCategory === ''}
+              onClick={() => setSelectedCategory('')}
+            />
+            {categories.map((cat) => (
+              <CategoryCard
+                key={cat}
+                category={cat}
+                isActive={selectedCategory === cat}
+                onClick={() => setSelectedCategory(cat)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="filters-section">
+          <div className="section-header">
+            <h2 className="section-title">Popular Dishes</h2>
+            <label className="veg-filter">
               <input
                 type="checkbox"
                 checked={vegOnly}
                 onChange={(e) => setVegOnly(e.target.checked)}
               />
-              Veg Only
+              <span>🟢 Veg Only</span>
             </label>
           </div>
         </div>

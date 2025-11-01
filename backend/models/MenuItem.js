@@ -45,7 +45,27 @@ const menuItemSchema = new mongoose.Schema({
     min: 0,
     max: 5
   },
-  tags: [String]
+  tags: [String],
+  discount: {
+    enabled: {
+      type: Boolean,
+      default: false
+    },
+    type: {
+      type: String,
+      enum: ['percentage', 'fixed'],
+      default: 'percentage'
+    },
+    value: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    label: {
+      type: String,
+      default: ''
+    }
+  }
 }, {
   timestamps: true
 });
