@@ -1,0 +1,190 @@
+/* Mobile Checkout Bar - Sticky bottom cart for mobile screens */
+.mobile-checkout-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 99;
+  animation: slideUpBar 0.3s ease-out;
+}
+
+@keyframes slideUpBar {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.mobile-checkout-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 12px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Left side - Image and info */
+.mobile-checkout-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.mobile-checkout-left:active {
+  opacity: 0.7;
+}
+
+.mobile-checkout-image {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid var(--primary-color);
+}
+
+.mobile-checkout-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mobile-item-count-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--primary-color);
+  color: white;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  border: 2px solid white;
+}
+
+.mobile-checkout-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobile-items-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+.mobile-total-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* Right side - Buttons */
+.mobile-checkout-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mobile-checkout-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mobile-checkout-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.mobile-checkout-btn:active {
+  transform: translateY(0);
+}
+
+.mobile-trash-btn {
+  background: #f5f5f5;
+  color: #ff4444;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.mobile-trash-btn:hover {
+  background: #ffebee;
+  transform: scale(1.05);
+}
+
+.mobile-trash-btn:active {
+  transform: scale(0.95);
+}
+
+/* Show only on mobile/tablet screens */
+@media (max-width: 1024px) {
+  .mobile-checkout-bar {
+    display: block;
+  }
+}
+
+/* Extra small screens - adjust sizing */
+@media (max-width: 480px) {
+  .mobile-checkout-content {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .mobile-checkout-image {
+    width: 45px;
+    height: 45px;
+  }
+
+  .mobile-checkout-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .mobile-trash-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .mobile-items-text {
+    font-size: 12px;
+  }
+
+  .mobile-total-text {
+    font-size: 15px;
+  }
+}

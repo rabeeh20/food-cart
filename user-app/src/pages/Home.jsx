@@ -4,6 +4,7 @@ import MenuCard from '../components/MenuCard';
 import PromoBanner from '../components/PromoBanner';
 import CategoryCard from '../components/CategoryCard';
 import CartSidebar from '../components/CartSidebar';
+import MobileCheckoutBar from '../components/MobileCheckoutBar';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 import { useSocket } from '../context/SocketContext';
@@ -151,6 +152,9 @@ const Home = () => {
           {hasCartItems && <CartSidebar />}
         </div>
       </div>
+
+      {/* Mobile Checkout Bar - Only show on mobile when cart has items */}
+      <MobileCheckoutBar />
     </div>
   );
 };

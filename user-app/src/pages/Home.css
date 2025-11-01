@@ -137,11 +137,16 @@
   .home-layout.has-cart {
     grid-template-columns: 1fr;
   }
+
+  /* Add bottom padding when mobile checkout bar is present */
+  .home-page {
+    padding-bottom: 90px;
+  }
 }
 
 @media (max-width: 768px) {
   .home-page {
-    padding: 20px 0;
+    padding: 20px 0 90px 0;
   }
 
   .section-title {
