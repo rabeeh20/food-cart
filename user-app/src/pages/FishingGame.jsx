@@ -1,32 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fishAPI } from '../utils/api';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
+import { ShoppingCart, ArrowLeft, X } from 'lucide-react';
 import './FishingGame.css';
 
 const FishingGame = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const gameAreaRef = useRef(null);
 
-  // Game states: 'loading' | 'idle' | 'casting' | 'caught' | 'weighing' | 'selecting'
-  const [gameState, setGameState] = useState('loading');
   const [availableFish, setAvailableFish] = useState([]);
   const [preparationStyles, setPreparationStyles] = useState([]);
-  const [gameEnabled, setGameEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [gameEnabled, setGameEnabled] = useState(false);
 
-  // Current catch data
+  // Hook state - position in percentage
+  const [hookPosition, setHookPosition] = useState({ x: 50, y: 10 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Game state
   const [caughtFish, setCaughtFish] = useState(null);
-  const [fishWeight, setFishWeight] = useState(0);
+  const [showPreparation, setShowPreparation] = useState(false);
   const [selectedPreparation, setSelectedPreparation] = useState(null);
+  const [fishWeight, setFishWeight] = useState(0);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Animation states
-  const [hookPosition, setHookPosition] = useState(0);
-  const [weightCounter, setWeightCounter] = useState(0);
+  // Swimming fish - each fish swims at different depths
+  const [swimmingFish, setSwimmingFish] = useState([]);
 
   useEffect(() => {
     fetchGameData();
+  }, []);
+
+  useEffect(() => {
+    // Initialize swimming fish positions when available fish loads
+    if (availableFish.length > 0) {
+      const positions = availableFish.map((fish, index) => ({
+        id: fish._id,
+        fishData: fish,
+        x: Math.random() * 80, // Random horizontal position (0-80%)
+        y: 30 + (index * 15) % 50, // Stagger vertically (30-80%)
+        speed: 0.5 + Math.random() * 1, // Random speed (0.5-1.5)
+        direction: Math.random() > 0.5 ? 1 : -1 // Random direction
+      }));
+      setSwimmingFish(positions);
+    }
+  }, [availableFish]);
+
+  useEffect(() => {
+    // Animate swimming fish
+    const swimInterval = setInterval(() => {
+      setSwimmingFish(prev => prev.map(fish => {
+        let newX = fish.x + (fish.speed * fish.direction);
+        let newDirection = fish.direction;
+
+        // Reverse direction at boundaries
+        if (newX <= 0 || newX >= 90) {
+          newDirection = -fish.direction;
+          newX = fish.x + (fish.speed * newDirection);
+        }
+
+        return { ...fish, x: newX, direction: newDirection };
+      }));
+    }, 50);
+
+    return () => clearInterval(swimInterval);
   }, []);
 
   const fetchGameData = async () => {
@@ -38,7 +79,7 @@ const FishingGame = () => {
 
       if (!fishRes.data.gameEnabled) {
         setGameEnabled(false);
-        setGameState('idle');
+        setLoading(false);
         toast.error('Fishing game is currently unavailable');
         return;
       }
@@ -46,86 +87,94 @@ const FishingGame = () => {
       if (fishRes.data.fish.length === 0) {
         toast.error('No fish available today. Please check back later!');
         setGameEnabled(false);
-        setGameState('idle');
+        setLoading(false);
         return;
       }
 
       setAvailableFish(fishRes.data.fish);
       setPreparationStyles(prepRes.data.preparationStyles);
-      setGameState('idle');
+      setGameEnabled(true);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching game data:', error);
       toast.error('Failed to load fishing game');
-      setGameState('idle');
+      setLoading(false);
       setGameEnabled(false);
     }
   };
 
-  const castHook = () => {
-    if (availableFish.length === 0) {
-      toast.error('No fish available!');
-      return;
-    }
+  // Mouse/Touch handlers for dragging hook
+  const handleHookMouseDown = (e) => {
+    if (caughtFish) return; // Can't drag if already caught
+    setIsDragging(true);
 
-    setGameState('casting');
+    const rect = gameAreaRef.current.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-    // Animate hook dropping
-    let position = 0;
-    const dropInterval = setInterval(() => {
-      position += 5;
-      setHookPosition(position);
-
-      if (position >= 100) {
-        clearInterval(dropInterval);
-        setTimeout(() => catchFish(), 500);
-      }
-    }, 30);
+    setDragStart({
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    });
   };
 
-  const catchFish = () => {
-    // Select random fish
-    const randomFish = availableFish[Math.floor(Math.random() * availableFish.length)];
+  const handleMouseMove = (e) => {
+    if (!isDragging || caughtFish) return;
 
-    // Generate random weight within fish's min-max range
-    const minWeight = randomFish.minWeight || 1.0;
-    const maxWeight = randomFish.maxWeight || 5.0;
+    const rect = gameAreaRef.current.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const x = ((clientX - rect.left) / rect.width) * 100;
+    const y = ((clientY - rect.top) / rect.height) * 100;
+
+    // Constrain hook within game area
+    const constrainedX = Math.max(5, Math.min(95, x));
+    const constrainedY = Math.max(10, Math.min(95, y));
+
+    setHookPosition({ x: constrainedX, y: constrainedY });
+
+    // Check collision with fish
+    checkFishCollision(constrainedX, constrainedY);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const checkFishCollision = (hookX, hookY) => {
+    // Check if hook overlaps with any fish
+    swimmingFish.forEach(fish => {
+      const fishCenterX = fish.x + 5; // Fish width is ~10%
+      const fishCenterY = fish.y + 5; // Fish height is ~10%
+
+      const distance = Math.sqrt(
+        Math.pow(hookX - fishCenterX, 2) + Math.pow(hookY - fishCenterY, 2)
+      );
+
+      // Collision detected (within 8% distance)
+      if (distance < 8 && !caughtFish) {
+        catchFish(fish.fishData);
+      }
+    });
+  };
+
+  const catchFish = (fish) => {
+    // Generate random weight
+    const minWeight = fish.minWeight || 1.0;
+    const maxWeight = fish.maxWeight || 5.0;
     const weight = (Math.random() * (maxWeight - minWeight) + minWeight).toFixed(1);
 
-    setCaughtFish(randomFish);
+    setCaughtFish(fish);
     setFishWeight(parseFloat(weight));
-    setGameState('caught');
+    setIsDragging(false);
 
-    // Animate hook pulling up
-    let position = 100;
-    const pullInterval = setInterval(() => {
-      position -= 5;
-      setHookPosition(position);
+    toast.success(`You caught a ${fish.name}!`);
 
-      if (position <= 0) {
-        clearInterval(pullInterval);
-        setTimeout(() => showWeightScale(), 300);
-      }
-    }, 30);
-  };
-
-  const showWeightScale = () => {
-    setGameState('weighing');
-
-    // Animate weight counter
-    let counter = 0;
-    const target = fishWeight;
-    const increment = target / 50;
-
-    const counterInterval = setInterval(() => {
-      counter += increment;
-      if (counter >= target) {
-        setWeightCounter(target);
-        clearInterval(counterInterval);
-        setTimeout(() => setGameState('selecting'), 1000);
-      } else {
-        setWeightCounter(counter);
-      }
-    }, 20);
+    // Show preparation selection after a short delay
+    setTimeout(() => {
+      setShowPreparation(true);
+    }, 1000);
   };
 
   const handlePreparationSelect = (prep) => {
@@ -146,26 +195,24 @@ const FishingGame = () => {
     };
 
     addToCart(caughtFish, variant);
-
     setShowSuccessModal(true);
     toast.success(`${caughtFish.name} added to cart!`);
   };
 
-  const catchAnother = () => {
-    setShowSuccessModal(false);
+  const resetGame = () => {
     setCaughtFish(null);
-    setFishWeight(0);
+    setShowPreparation(false);
     setSelectedPreparation(null);
-    setWeightCounter(0);
-    setHookPosition(0);
-    setGameState('idle');
+    setFishWeight(0);
+    setShowSuccessModal(false);
+    setHookPosition({ x: 50, y: 10 });
   };
 
   const viewCart = () => {
     navigate('/cart');
   };
 
-  if (gameState === 'loading') {
+  if (loading) {
     return (
       <div className="fishing-game-container">
         <div className="loading-screen">
@@ -183,6 +230,7 @@ const FishingGame = () => {
           <h2>Fishing Game Unavailable</h2>
           <p>Sorry, the fishing game is currently not available. Please check back later!</p>
           <button className="back-btn" onClick={() => navigate('/')}>
+            <ArrowLeft size={20} />
             Back to Home
           </button>
         </div>
@@ -193,80 +241,102 @@ const FishingGame = () => {
   return (
     <div className="fishing-game-container">
       <div className="game-header">
-        <h1>Catch Fresh Fish!</h1>
-        <p>Cast your hook and catch the freshest fish of the day</p>
+        <button className="back-btn-small" onClick={() => navigate('/')}>
+          <ArrowLeft size={20} />
+          Back
+        </button>
+        <div>
+          <h1>🎣 Catch Fresh Fish!</h1>
+          <p>Drag the hook to catch your favorite fish</p>
+        </div>
+        <button className="cart-btn-small" onClick={() => navigate('/cart')}>
+          <ShoppingCart size={20} />
+        </button>
       </div>
 
-      <div className="game-area">
+      <div
+        ref={gameAreaRef}
+        className="game-area"
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchMove={handleMouseMove}
+        onTouchEnd={handleMouseUp}
+      >
         {/* Ocean Background */}
         <div className="ocean-container">
+          <div className="ocean-surface"></div>
           <div className="ocean-waves"></div>
 
-          {/* Fishing Rod */}
-          {(gameState === 'idle' || gameState === 'casting' || gameState === 'caught') && (
-            <div className="fishing-rod-container">
-              <div className="fishing-rod"></div>
+          {/* Fishing Hook */}
+          {!caughtFish && (
+            <>
               <div
                 className="fishing-line"
-                style={{ height: `${hookPosition}%` }}
-              ></div>
+                style={{
+                  left: `${hookPosition.x}%`,
+                  height: `${hookPosition.y}%`
+                }}
+              />
               <div
-                className="fishing-hook"
-                style={{ top: `${hookPosition}%` }}
+                className={`fishing-hook ${isDragging ? 'dragging' : ''}`}
+                style={{
+                  left: `${hookPosition.x}%`,
+                  top: `${hookPosition.y}%`
+                }}
+                onMouseDown={handleHookMouseDown}
+                onTouchStart={handleHookMouseDown}
               >
-                {caughtFish && gameState === 'caught' && (
-                  <div className="caught-fish-preview">
-                    <img src={caughtFish.image} alt={caughtFish.name} />
-                  </div>
-                )}
+                🪝
               </div>
-            </div>
+            </>
           )}
 
-          {/* Cast Button */}
-          {gameState === 'idle' && (
-            <div className="cast-button-container">
-              <button className="cast-btn" onClick={castHook}>
-                Cast Hook
-              </button>
+          {/* Swimming Fish */}
+          {!caughtFish && swimmingFish.map((fish) => (
+            <div
+              key={fish.id}
+              className="swimming-fish"
+              style={{
+                left: `${fish.x}%`,
+                top: `${fish.y}%`,
+                transform: `scaleX(${fish.direction})`
+              }}
+            >
+              <img src={fish.fishData.image} alt={fish.fishData.name} />
+              <div className="fish-name-tag">{fish.fishData.name}</div>
             </div>
-          )}
+          ))}
 
-          {/* Casting Animation */}
-          {gameState === 'casting' && (
-            <div className="casting-message">
-              <p>Casting...</p>
+          {/* Caught Fish Display */}
+          {caughtFish && !showPreparation && (
+            <div className="caught-fish-display">
+              <h2>🎉 You caught a {caughtFish.name}!</h2>
+              <img src={caughtFish.image} alt={caughtFish.name} />
+              <p className="fish-weight">{fishWeight} kg</p>
             </div>
           )}
         </div>
+      </div>
 
-        {/* Weight Scale */}
-        {gameState === 'weighing' && caughtFish && (
-          <div className="weight-scale-container">
-            <h2>You Caught a {caughtFish.name}!</h2>
-            <div className="scale-display">
-              <div className="fish-image">
-                <img src={caughtFish.image} alt={caughtFish.name} />
-              </div>
-              <div className="weight-display">
-                <div className="weight-number">{weightCounter.toFixed(1)}</div>
-                <div className="weight-unit">kg</div>
-              </div>
-              <div className="scale-base"></div>
+      {/* Preparation Selector */}
+      {showPreparation && caughtFish && (
+        <div className="preparation-modal-overlay">
+          <div className="preparation-modal">
+            <div className="modal-header">
+              <h2>Choose Preparation Style</h2>
+              <button className="close-modal" onClick={resetGame}>
+                <X size={24} />
+              </button>
             </div>
-          </div>
-        )}
 
-        {/* Preparation Selector */}
-        {gameState === 'selecting' && caughtFish && (
-          <div className="preparation-selector-container">
-            <div className="fish-info">
+            <div className="caught-fish-info">
               <img src={caughtFish.image} alt={caughtFish.name} />
-              <h2>{caughtFish.name}</h2>
-              <p className="fish-weight">{fishWeight} kg</p>
+              <div>
+                <h3>{caughtFish.name}</h3>
+                <p>{fishWeight} kg @ ₹{caughtFish.pricePerKg}/kg</p>
+              </div>
             </div>
-
-            <h3>Choose Your Preparation Style</h3>
 
             <div className="preparation-grid">
               {preparationStyles.map((prep) => {
@@ -279,52 +349,56 @@ const FishingGame = () => {
                     className={`preparation-card ${selectedPreparation?.name === prep.name ? 'selected' : ''}`}
                     onClick={() => handlePreparationSelect(prep)}
                   >
-                    <h4>{prep.name}</h4>
-                    <p className="prep-description">{prep.description}</p>
-                    <div className="price-breakdown">
-                      <span className="base-price">Base: ₹{basePrice.toFixed(0)}</span>
-                      <span className="prep-price">+₹{prep.price}</span>
+                    <div className="prep-icon">
+                      {prep.name === 'Fry' && '🍳'}
+                      {prep.name === 'Masala' && '🌶️'}
+                      {prep.name === 'Grilled' && '🔥'}
+                      {prep.name === 'Curry' && '🍛'}
                     </div>
-                    <div className="total-price">Total: ₹{totalPrice.toFixed(0)}</div>
+                    <h4>{prep.name}</h4>
+                    <p className="prep-price">+₹{prep.price}</p>
+                    <div className="total-price">₹{totalPrice.toFixed(0)}</div>
                   </div>
                 );
               })}
             </div>
 
             <button
-              className="add-to-cart-btn"
+              className="add-to-cart-btn-large"
               onClick={addFishToCart}
               disabled={!selectedPreparation}
             >
+              <ShoppingCart size={20} />
               Add to Cart
             </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Success Modal */}
-        {showSuccessModal && (
-          <div className="success-modal-overlay">
-            <div className="success-modal">
-              <div className="success-icon">✓</div>
-              <h2>Fish Added to Cart!</h2>
-              <p>
-                {caughtFish.name} ({selectedPreparation.name}) - {fishWeight}kg
-              </p>
-              <p className="total-price">
-                ₹{((fishWeight * caughtFish.pricePerKg) + selectedPreparation.price).toFixed(0)}
-              </p>
-              <div className="modal-actions">
-                <button className="catch-another-btn" onClick={catchAnother}>
-                  Catch Another Fish
-                </button>
-                <button className="view-cart-btn" onClick={viewCart}>
-                  View Cart
-                </button>
-              </div>
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="success-modal-overlay">
+          <div className="success-modal">
+            <div className="success-icon">✓</div>
+            <h2>Added to Cart!</h2>
+            <p>
+              {caughtFish.name} ({selectedPreparation.name}) - {fishWeight}kg
+            </p>
+            <p className="success-price">
+              ₹{((fishWeight * caughtFish.pricePerKg) + selectedPreparation.price).toFixed(0)}
+            </p>
+            <div className="modal-actions">
+              <button className="catch-another-btn" onClick={resetGame}>
+                Catch Another
+              </button>
+              <button className="view-cart-btn" onClick={viewCart}>
+                <ShoppingCart size={18} />
+                View Cart
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

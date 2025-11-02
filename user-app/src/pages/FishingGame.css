@@ -1,446 +1,425 @@
 /* Fishing Game Container */
 .fishing-game-container {
-  min-height: calc(100vh - 80px);
-  padding: 40px 20px;
-  background: linear-gradient(to bottom, #87CEEB 0%, #4A90E2 50%, #1E3A8A 100%);
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #87CEEB 0%, #4682B4 100%);
+  padding: 20px;
 }
 
-/* Loading Screen */
-.loading-screen {
+/* Game Header */
+.game-header {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  height: 60vh;
-  color: white;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Game Unavailable */
-.game-unavailable {
-  text-align: center;
-  padding: 60px 20px;
-  background: white;
+  max-width: 1200px;
+  margin: 0 auto 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 12px;
-  max-width: 500px;
-  margin: 100px auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.game-unavailable h2 {
-  color: var(--dark-color);
-  margin-bottom: 16px;
+.game-header h1 {
+  margin: 0;
+  font-size: 32px;
+  color: var(--primary-color);
 }
 
-.game-unavailable p {
+.game-header p {
+  margin: 5px 0 0;
   color: var(--text-medium);
-  margin-bottom: 24px;
+  font-size: 14px;
 }
 
-.back-btn {
+.back-btn-small,
+.cart-btn-small {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
   background: var(--primary-color);
   color: white;
   border: none;
-  padding: 12px 32px;
   border-radius: 8px;
-  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.back-btn:hover {
+.back-btn-small:hover,
+.cart-btn-small:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
-}
-
-/* Game Header */
-.game-header {
-  text-align: center;
-  color: white;
-  margin-bottom: 40px;
-}
-
-.game-header h1 {
-  font-size: 42px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.game-header p {
-  font-size: 18px;
-  opacity: 0.9;
 }
 
 /* Game Area */
 .game-area {
   max-width: 1200px;
   margin: 0 auto;
+  height: 600px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  cursor: crosshair;
 }
 
 /* Ocean Container */
 .ocean-container {
-  position: relative;
   width: 100%;
-  height: 500px;
-  background: linear-gradient(to bottom, #4A90E2 0%, #1E3A8A 100%);
-  border-radius: 16px;
+  height: 100%;
+  background: linear-gradient(to bottom,
+    #0077be 0%,
+    #0099cc 30%,
+    #006699 60%,
+    #004466 100%
+  );
+  position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
+/* Ocean Surface */
+.ocean-surface {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom,
+    rgba(135, 206, 235, 0.8) 0%,
+    rgba(0, 119, 190, 0.4) 100%
+  );
+  z-index: 5;
+}
+
+/* Ocean Waves Animation */
 .ocean-waves {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 100px;
-  background: linear-gradient(to bottom, rgba(135, 206, 235, 0.5), transparent);
+  background:
+    radial-gradient(ellipse at center, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
   animation: waves 3s ease-in-out infinite;
+  z-index: 6;
 }
 
 @keyframes waves {
-  0%, 100% { transform: translateY(0); }
+  0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
 }
 
-/* Fishing Rod */
-.fishing-rod-container {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-}
-
-.fishing-rod {
-  width: 8px;
-  height: 150px;
-  background: linear-gradient(to bottom, #8B4513, #A0522D);
-  border-radius: 4px;
-  position: relative;
-}
-
+/* Fishing Line */
 .fishing-line {
   position: absolute;
-  top: 150px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
   width: 2px;
-  background: rgba(255, 255, 255, 0.8);
-  transition: height 0.03s linear;
+  background: linear-gradient(to bottom, #333 0%, #666 100%);
+  transform: translateX(-50%);
+  z-index: 10;
+  pointer-events: none;
 }
 
+/* Fishing Hook */
 .fishing-hook {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 30px;
-  height: 30px;
-  transition: top 0.03s linear;
+  font-size: 32px;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  cursor: grab;
+  transition: transform 0.1s;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  user-select: none;
 }
 
-.fishing-hook::before {
-  content: '🪝';
-  font-size: 30px;
-  display: block;
+.fishing-hook.dragging {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.2);
+  animation: hookBob 0.3s ease-in-out infinite;
 }
 
-.caught-fish-preview {
+@keyframes hookBob {
+  0%, 100% { transform: translate(-50%, -50%) scale(1.2) rotate(-5deg); }
+  50% { transform: translate(-50%, -50%) scale(1.2) rotate(5deg); }
+}
+
+/* Swimming Fish */
+.swimming-fish {
   position: absolute;
-  bottom: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
-  animation: fishWiggle 0.3s ease-in-out infinite;
+  width: 80px;
+  height: 80px;
+  transform-origin: center;
+  transition: transform 0.3s;
+  z-index: 8;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
 }
 
-.caught-fish-preview img {
+.swimming-fish img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  animation: swim 2s ease-in-out infinite;
 }
 
-@keyframes fishWiggle {
-  0%, 100% { transform: translateX(-50%) rotate(-5deg); }
-  50% { transform: translateX(-50%) rotate(5deg); }
+.swimming-fish .fish-name-tag {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
 }
 
-/* Cast Button */
-.cast-button-container {
+.swimming-fish:hover .fish-name-tag {
+  opacity: 1;
+}
+
+@keyframes swim {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(2deg); }
+  75% { transform: translateY(5px) rotate(-2deg); }
+}
+
+/* Caught Fish Display */
+.caught-fish-display {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: popIn 0.5s ease-out;
+  z-index: 20;
 }
 
-.cast-btn {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 20px 50px;
-  border-radius: 50px;
+.caught-fish-display h2 {
+  margin: 0 0 20px;
+  color: var(--primary-color);
+  font-size: 28px;
+}
+
+.caught-fish-display img {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  animation: wiggle 0.5s ease-in-out infinite;
+}
+
+.caught-fish-display .fish-weight {
+  margin: 15px 0 0;
   font-size: 24px;
   font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
-  transition: all 0.3s ease;
-  animation: pulse 2s ease-in-out infinite;
+  color: var(--dark-color);
 }
 
-.cast-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 12px 30px rgba(255, 107, 53, 0.6);
+@keyframes popIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
 }
 
-.cast-btn:active {
-  transform: scale(0.95);
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
 }
 
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4); }
-  50% { box-shadow: 0 8px 30px rgba(255, 107, 53, 0.7); }
+/* Preparation Modal */
+.preparation-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s;
 }
 
-/* Casting Message */
-.casting-message {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 28px;
-  font-weight: 600;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  animation: fadeInOut 1.5s ease-in-out infinite;
-}
-
-@keyframes fadeInOut {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
-
-/* Weight Scale */
-.weight-scale-container {
+.preparation-modal {
   background: white;
   border-radius: 16px;
-  padding: 40px;
-  margin-top: 40px;
-  text-align: center;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.5s ease-out;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideUp {
   from {
-    opacity: 0;
     transform: translateY(50px);
+    opacity: 0;
   }
   to {
-    opacity: 1;
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
-.weight-scale-container h2 {
-  color: var(--dark-color);
-  font-size: 32px;
-  margin-bottom: 30px;
+.preparation-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e9ecef;
 }
 
-.scale-display {
+.preparation-modal .modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--dark-color);
+}
+
+.preparation-modal .close-modal {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-medium);
+  transition: color 0.2s;
+}
+
+.preparation-modal .close-modal:hover {
+  color: var(--dark-color);
+}
+
+/* Caught Fish Info */
+.caught-fish-info {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 20px;
+  padding: 24px;
+  border-bottom: 1px solid #e9ecef;
 }
 
-.fish-image {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 4px solid var(--primary-color);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-  animation: scaleIn 0.5s ease-out;
+.caught-fish-info img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f8f9fa;
+  padding: 8px;
 }
 
-.fish-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-@keyframes scaleIn {
-  from { transform: scale(0); }
-  to { transform: scale(1); }
-}
-
-.weight-display {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-  padding: 20px 40px;
-  border-radius: 12px;
-  color: white;
-}
-
-.weight-number {
-  font-size: 64px;
-  font-weight: 700;
-  font-family: 'Arial', sans-serif;
-}
-
-.weight-unit {
-  font-size: 32px;
-  font-weight: 600;
-}
-
-.scale-base {
-  width: 80%;
-  height: 20px;
-  background: linear-gradient(to right, #666, #999);
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-/* Preparation Selector */
-.preparation-selector-container {
-  background: white;
-  border-radius: 16px;
-  padding: 40px;
-  margin-top: 40px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.5s ease-out;
-}
-
-.fish-info {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.fish-info img {
-  width: 150px;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 4px solid var(--primary-color);
-  margin-bottom: 16px;
-}
-
-.fish-info h2 {
-  color: var(--dark-color);
-  font-size: 32px;
-  margin-bottom: 8px;
-}
-
-.fish-weight {
+.caught-fish-info h3 {
+  margin: 0;
   font-size: 20px;
-  color: var(--primary-color);
-  font-weight: 600;
-}
-
-.preparation-selector-container h3 {
-  text-align: center;
   color: var(--dark-color);
-  font-size: 24px;
-  margin-bottom: 24px;
 }
 
+.caught-fish-info p {
+  margin: 4px 0 0;
+  color: var(--text-medium);
+  font-size: 14px;
+}
+
+/* Preparation Grid */
 .preparation-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  padding: 24px;
 }
 
 .preparation-card {
-  background: #f8f9fa;
-  border: 3px solid transparent;
+  padding: 20px;
+  border: 2px solid #e9ecef;
   border-radius: 12px;
-  padding: 24px;
+  text-align: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
+  background: white;
 }
 
 .preparation-card:hover {
-  border-color: var(--primary-light);
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-color);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
 }
 
 .preparation-card.selected {
   border-color: var(--primary-color);
-  background: #fff8f5;
-  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.2);
+  background: #fff5f0;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.preparation-card .prep-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
 }
 
 .preparation-card h4 {
+  margin: 0 0 8px;
+  font-size: 18px;
   color: var(--dark-color);
-  font-size: 22px;
-  margin-bottom: 8px;
 }
 
-.prep-description {
-  color: var(--text-medium);
-  font-size: 14px;
-  margin-bottom: 16px;
-  min-height: 40px;
-}
-
-.price-breakdown {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
+.preparation-card .prep-price {
   font-size: 14px;
   color: var(--text-medium);
+  margin: 4px 0;
 }
 
-.total-price {
-  font-size: 24px;
+.preparation-card .total-price {
+  font-size: 20px;
   font-weight: 700;
   color: var(--primary-color);
-  text-align: center;
-  padding-top: 12px;
-  border-top: 2px solid #e0e0e0;
+  margin-top: 8px;
 }
 
-.add-to-cart-btn {
-  width: 100%;
+/* Add to Cart Button */
+.add-to-cart-btn-large {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: calc(100% - 48px);
+  margin: 0 24px 24px;
+  padding: 16px;
   background: var(--primary-color);
   color: white;
   border: none;
-  padding: 18px;
   border-radius: 12px;
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
 }
 
-.add-to-cart-btn:hover:not(:disabled) {
+.add-to-cart-btn-large:hover:not(:disabled) {
   background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.3);
 }
 
-.add-to-cart-btn:disabled {
+.add-to-cart-btn-large:disabled {
   background: #ccc;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 /* Success Modal */
@@ -454,95 +433,106 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  z-index: 2000;
+  animation: fadeIn 0.3s;
 }
 
 .success-modal {
   background: white;
   border-radius: 16px;
   padding: 40px;
-  max-width: 500px;
   text-align: center;
-  animation: modalSlideUp 0.4s ease-out;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+  animation: bounceIn 0.5s ease-out;
 }
 
-@keyframes modalSlideUp {
-  from {
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
     opacity: 0;
-    transform: translateY(50px) scale(0.9);
   }
-  to {
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
-.success-icon {
+.success-modal .success-icon {
   width: 80px;
   height: 80px;
-  background: #4CAF50;
+  background: #28a745;
   color: white;
-  font-size: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 48px;
   margin: 0 auto 20px;
-  animation: scaleIn 0.5s ease-out;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 .success-modal h2 {
+  margin: 0 0 12px;
+  font-size: 24px;
   color: var(--dark-color);
-  font-size: 28px;
-  margin-bottom: 12px;
 }
 
 .success-modal p {
+  margin: 8px 0;
   color: var(--text-medium);
-  font-size: 16px;
-  margin-bottom: 8px;
+  font-size: 14px;
 }
 
-.success-modal .total-price {
-  font-size: 32px;
-  color: var(--primary-color);
+.success-modal .success-price {
+  font-size: 28px;
   font-weight: 700;
+  color: var(--primary-color);
   margin: 16px 0;
 }
 
-.modal-actions {
+.success-modal .modal-actions {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   margin-top: 24px;
 }
 
 .catch-another-btn,
 .view-cart-btn {
   flex: 1;
-  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border: none;
   border-radius: 8px;
-  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
+  transition: all 0.2s;
+  font-size: 14px;
 }
 
 .catch-another-btn {
-  background: white;
-  color: var(--primary-color);
-  border: 2px solid var(--primary-color);
+  background: #e9ecef;
+  color: var(--dark-color);
 }
 
 .catch-another-btn:hover {
-  background: var(--primary-color);
-  color: white;
+  background: #dee2e6;
+  transform: translateY(-2px);
 }
 
 .view-cart-btn {
@@ -553,59 +543,133 @@
 .view-cart-btn:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
-/* Mobile Responsiveness */
+/* Loading Screen */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: white;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Game Unavailable */
+.game-unavailable {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 16px;
+  max-width: 500px;
+  margin: 100px auto;
+}
+
+.game-unavailable h2 {
+  margin: 0 0 16px;
+  font-size: 28px;
+  color: var(--dark-color);
+}
+
+.game-unavailable p {
+  margin: 0 0 24px;
+  color: var(--text-medium);
+  font-size: 16px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .fishing-game-container {
-    padding: 20px 10px;
+  .game-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 
   .game-header h1 {
-    font-size: 32px;
-  }
-
-  .game-header p {
-    font-size: 16px;
-  }
-
-  .ocean-container {
-    height: 400px;
-  }
-
-  .cast-btn {
-    padding: 16px 40px;
-    font-size: 20px;
-  }
-
-  .weight-scale-container,
-  .preparation-selector-container {
-    padding: 24px;
-  }
-
-  .fish-image {
-    width: 150px;
-    height: 150px;
-  }
-
-  .weight-number {
-    font-size: 48px;
-  }
-
-  .weight-unit {
     font-size: 24px;
+  }
+
+  .game-area {
+    height: 500px;
+  }
+
+  .swimming-fish {
+    width: 60px;
+    height: 60px;
+  }
+
+  .fishing-hook {
+    font-size: 24px;
+  }
+
+  .preparation-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .success-modal {
+    padding: 30px 20px;
+  }
+
+  .success-modal .modal-actions {
+    flex-direction: column;
+  }
+
+  .caught-fish-display {
+    padding: 30px 20px;
+  }
+
+  .caught-fish-display img {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-area {
+    height: 400px;
   }
 
   .preparation-grid {
     grid-template-columns: 1fr;
   }
 
-  .success-modal {
-    padding: 30px 20px;
-    margin: 0 20px;
-  }
-
-  .modal-actions {
-    flex-direction: column;
+  .back-btn-small span,
+  .cart-btn-small span {
+    display: none;
   }
 }
