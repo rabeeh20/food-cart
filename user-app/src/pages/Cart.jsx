@@ -6,7 +6,7 @@ import { Trash2, Plus, Minus } from 'lucide-react';
 import './Cart.css';
 
 const Cart = () => {
-  const { cart, updateQuantity, removeFromCart, getCartTotal } = useCart();
+  const { cart, updateQuantity, removeFromCart, getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -16,6 +16,12 @@ const Cart = () => {
       return;
     }
     navigate('/checkout');
+  };
+
+  const handleClearCart = () => {
+    if (window.confirm('Are you sure you want to clear all items from your cart?')) {
+      clearCart();
+    }
   };
 
   if (cart.length === 0) {
@@ -34,7 +40,16 @@ const Cart = () => {
 
   return (
     <div className="container cart-page">
-      <h1>Shopping Cart</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1>Shopping Cart</h1>
+        <button
+          className="btn btn-outline"
+          onClick={handleClearCart}
+          style={{ fontSize: '14px', padding: '8px 16px' }}
+        >
+          Clear Cart
+        </button>
+      </div>
       <div className="cart-layout">
         <div className="cart-items">
           {cart.map((item) => (

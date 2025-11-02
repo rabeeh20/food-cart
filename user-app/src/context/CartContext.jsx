@@ -59,8 +59,19 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  const removeFromCart = (itemId) => {
-    setCart(prevCart => prevCart.filter(i => i._id !== itemId));
+  const removeFromCart = (itemId, variant = null) => {
+    setCart(prevCart => {
+      if (variant) {
+        // Remove specific fish variant
+        return prevCart.filter(i => !(
+          i._id === itemId &&
+          i.variant?.preparation === variant.preparation &&
+          i.variant?.weight === variant.weight
+        ));
+      }
+      // Remove all items with this ID (including variants)
+      return prevCart.filter(i => i._id !== itemId);
+    });
   };
 
   const updateQuantity = (itemId, quantity) => {

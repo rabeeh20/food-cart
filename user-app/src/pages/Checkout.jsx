@@ -13,6 +13,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [invalidItems, setInvalidItems] = useState([]);
   const [newAddress, setNewAddress] = useState({
     fullName: '',
     phone: '',
@@ -25,7 +26,7 @@ const Checkout = () => {
     addressType: 'Home'
   });
 
-  const { cart, getCartTotal, clearCart } = useCart();
+  const { cart, getCartTotal, clearCart, removeFromCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -88,6 +89,12 @@ const Checkout = () => {
       return;
     }
 
+    if (cart.length === 0) {
+      toast.error('Your cart is empty');
+      navigate('/menu');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -105,7 +112,7 @@ const Checkout = () => {
         const orderResponse = await orderAPI.create(orderData);
 
         if (!orderResponse.data.success) {
-          throw new Error('Failed to create order');
+          throw new Error(orderResponse.data.message || 'Failed to create order');
         }
 
         clearCart();
@@ -207,7 +214,24 @@ const Checkout = () => {
       paymentObject.open();
       setLoading(false); // Reset loading after opening payment modal
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to place order');
+      console.error('Place order error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to place order';
+
+      // Check if error is about invalid menu item
+      if (errorMessage.includes('Menu item not found')) {
+        // Extract the item ID from error message
+        const match = errorMessage.match(/Menu item not found: ([a-f0-9]+)/);
+        if (match) {
+          const invalidId = match[1];
+          // Remove the invalid item from cart
+          removeFromCart(invalidId);
+          toast.error('Some items in your cart are no longer available. They have been removed. Please try again.');
+        } else {
+          toast.error(errorMessage);
+        }
+      } else {
+        toast.error(errorMessage);
+      }
       setLoading(false);
     }
   };
@@ -218,6 +242,16 @@ const Checkout = () => {
     <div className="container checkout-page">
       <h1>Checkout</h1>
 
+      {cart.length === 0 && (
+        <div className="alert alert-warning">
+          <p>Your cart is empty. Add some items from the menu before checking out.</p>
+          <button className="btn btn-primary" onClick={() => navigate('/menu')}>
+            Browse Menu
+          </button>
+        </div>
+      )}
+
+      {cart.length > 0 && (
       <div className="checkout-layout">
         <div className="checkout-main">
           <div className="card">
@@ -379,6 +413,7 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+      )}
 
       {/* Payment Processing Overlay */}
       {processingPayment && (
