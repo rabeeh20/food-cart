@@ -87,10 +87,13 @@ const FishingGame = () => {
         let newX = fish.x + (currentSpeed * fish.direction);
         let newDirection = fish.direction;
 
-        // Reverse direction at boundaries
-        if (newX <= 0 || newX >= 90) {
-          newDirection = -fish.direction;
-          newX = Math.max(0, Math.min(90, fish.x + (currentSpeed * newDirection)));
+        // Wrap around continuously (loop from edge to edge)
+        if (fish.direction > 0 && newX > 100) {
+          // Swimming right, wrap to left
+          newX = -10;
+        } else if (fish.direction < 0 && newX < -10) {
+          // Swimming left, wrap to right
+          newX = 100;
         }
 
         // Natural sinusoidal vertical movement (wave-like swimming)
