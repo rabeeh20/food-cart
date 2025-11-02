@@ -36,16 +36,27 @@ const FishingGame = () => {
   }, []);
 
   useEffect(() => {
-    // Initialize swimming fish positions when available fish loads
+    // Initialize swimming fish positions with depth layers
     if (availableFish.length > 0) {
-      const positions = availableFish.map((fish, index) => ({
-        id: fish._id,
-        fishData: fish,
-        x: Math.random() * 80, // Random horizontal position (0-80%)
-        y: 30 + (index * 15) % 50, // Stagger vertically (30-80%)
-        speed: 0.5 + Math.random() * 1, // Random speed (0.5-1.5)
-        direction: Math.random() > 0.5 ? 1 : -1 // Random direction
-      }));
+      const positions = availableFish.map((fish, index) => {
+        const depthLayer = (index % 3) + 1; // Distribute across 3 depth layers
+        const depthConfig = {
+          1: { scale: 1.3, speed: 1.0, zIndex: 15 }, // Foreground
+          2: { scale: 1.0, speed: 0.7, zIndex: 10 }, // Midground
+          3: { scale: 0.7, speed: 0.5, zIndex: 5 }   // Background
+        };
+
+        return {
+          id: fish._id,
+          fishData: fish,
+          x: Math.random() * 80,
+          y: 30 + (index * 12) % 50,
+          depth: depthLayer,
+          scale: depthConfig[depthLayer].scale,
+          speed: (0.3 + Math.random() * 0.5) * depthConfig[depthLayer].speed,
+          direction: Math.random() > 0.5 ? 1 : -1
+        };
+      });
       setSwimmingFish(positions);
     }
   }, [availableFish]);
@@ -69,6 +80,77 @@ const FishingGame = () => {
 
     return () => clearInterval(swimInterval);
   }, []);
+
+  useEffect(() => {
+    // Generate bubble particles
+    if (!gameAreaRef.current || caughtFish) return;
+
+    const generateBubble = () => {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+
+      const size = 8 + Math.random() * 15; // 8-23px
+      bubble.style.width = size + 'px';
+      bubble.style.height = size + 'px';
+      bubble.style.left = Math.random() * 100 + '%';
+      bubble.style.bottom = '0px';
+
+      const driftX = (Math.random() - 0.5) * 40;
+      const driftXEnd = (Math.random() - 0.5) * 30;
+      bubble.style.setProperty('--bubble-drift-x', driftX + 'px');
+      bubble.style.setProperty('--bubble-drift-x-end', driftXEnd + 'px');
+
+      const duration = 4 + Math.random() * 3; // 4-7s
+      bubble.style.animation = `bubbleRise ${duration}s linear, bubbleWobble 2s ease-in-out infinite`;
+
+      gameAreaRef.current.querySelector('.ocean-container').appendChild(bubble);
+
+      setTimeout(() => bubble.remove(), duration * 1000);
+    };
+
+    const bubbleInterval = setInterval(generateBubble, 400);
+
+    // Generate initial bubbles
+    for (let i = 0; i < 15; i++) {
+      setTimeout(generateBubble, i * 200);
+    }
+
+    return () => clearInterval(bubbleInterval);
+  }, [caughtFish]);
+
+  useEffect(() => {
+    // Generate ambient floating particles
+    if (!gameAreaRef.current || caughtFish) return;
+
+    const generateParticle = () => {
+      const particle = document.createElement('div');
+      particle.className = 'ambient-particle';
+
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = 20 + Math.random() * 60 + '%';
+
+      const driftX = (Math.random() - 0.5) * 100;
+      const driftY = -300 - Math.random() * 200;
+      particle.style.setProperty('--particle-drift-x', driftX + 'px');
+      particle.style.setProperty('--particle-drift-y', driftY + 'px');
+
+      const duration = 6 + Math.random() * 4; // 6-10s
+      particle.style.animation = `floatParticle ${duration}s linear`;
+
+      gameAreaRef.current.querySelector('.ocean-container').appendChild(particle);
+
+      setTimeout(() => particle.remove(), duration * 1000);
+    };
+
+    const particleInterval = setInterval(generateParticle, 800);
+
+    // Generate initial particles
+    for (let i = 0; i < 20; i++) {
+      setTimeout(generateParticle, i * 300);
+    }
+
+    return () => clearInterval(particleInterval);
+  }, [caughtFish]);
 
   const fetchGameData = async () => {
     try {
@@ -297,10 +379,12 @@ const FishingGame = () => {
             <div
               key={fish.id}
               className="swimming-fish"
+              data-depth={fish.depth}
               style={{
                 left: `${fish.x}%`,
                 top: `${fish.y}%`,
-                transform: `scaleX(${fish.direction})`
+                transform: `scale(${fish.scale}) scaleX(${fish.direction})`,
+                zIndex: fish.depth === 1 ? 15 : fish.depth === 2 ? 10 : 5
               }}
             >
               <img src={fish.fishData.image} alt={fish.fishData.name} />
