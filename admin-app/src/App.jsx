@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
 import MenuManagement from './pages/MenuManagement';
+import FishManagement from './pages/FishManagement';
 import { SocketProvider } from './context/SocketContext';
 
 function App() {
@@ -57,6 +58,12 @@ function App() {
                 path="/menu"
                 element={
                   isAuthenticated ? <MenuManagement /> : <Navigate to="/login" />
+                }
+              />
+              <Route
+                path="/fish"
+                element={
+                  isAuthenticated ? <FishManagement /> : <Navigate to="/login" />
                 }
               />
               <Route path="/" element={<Navigate to={isAuthenticated ? "/orders" : "/login"} />} />

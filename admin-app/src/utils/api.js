@@ -42,7 +42,32 @@ export const menuAPI = {
   getAll: (params) => api.get('/menu', { params }),
   create: (data) => api.post('/menu', data),
   update: (id, data) => api.put(`/menu/${id}`, data),
-  delete: (id) => api.delete(`/menu/${id}`)
+  delete: (id) => api.delete(`/menu/${id}`),
+  uploadImage: (formData) => {
+    return api.post('/menu/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  }
+};
+
+export const fishAPI = {
+  getAllFish: () => api.get('/fish/all'),
+  getFishById: (id) => api.get(`/fish/${id}`),
+  createFish: (data) => api.post('/fish', data),
+  updateFish: (id, data) => api.put(`/fish/${id}`, data),
+  deleteFish: (id) => api.delete(`/fish/${id}`),
+  getGameSettings: () => api.get('/fish/game-settings'),
+  toggleGame: (data) => api.put('/fish/game/toggle', data),
+  updatePreparationStyles: (data) => api.put('/fish/game/preparation-styles', data),
+  uploadImage: (formData) => {
+    return api.post('/menu/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  }
 };
 
 export default api;

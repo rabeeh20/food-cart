@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, LayoutDashboard, Package, UtensilsCrossed } from 'lucide-react';
+import { LogOut, LayoutDashboard, Package, UtensilsCrossed, Fish } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = ({ setIsAuthenticated }) => {
@@ -38,6 +38,12 @@ const Navbar = ({ setIsAuthenticated }) => {
               <Link to="/menu" className="nav-link">
                 <UtensilsCrossed size={18} />
                 Menu
+              </Link>
+            )}
+            {isSuperAdmin && (
+              <Link to="/fish" className="nav-link">
+                <Fish size={18} />
+                Fish
               </Link>
             )}
             <button onClick={handleLogout} className="btn btn-danger">
