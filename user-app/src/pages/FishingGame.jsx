@@ -36,25 +36,30 @@ const FishingGame = () => {
   }, []);
 
   useEffect(() => {
-    // Initialize swimming fish positions with depth layers
+    // Initialize swimming fish positions with depth layers and natural behavior
     if (availableFish.length > 0) {
       const positions = availableFish.map((fish, index) => {
         const depthLayer = (index % 3) + 1; // Distribute across 3 depth layers
         const depthConfig = {
-          1: { scale: 1.3, speed: 1.0, zIndex: 15 }, // Foreground
-          2: { scale: 1.0, speed: 0.7, zIndex: 10 }, // Midground
-          3: { scale: 0.7, speed: 0.5, zIndex: 5 }   // Background
+          1: { scale: 1.4, speed: 1.0, zIndex: 15 }, // Foreground - larger, faster
+          2: { scale: 1.0, speed: 0.6, zIndex: 10 }, // Midground - normal
+          3: { scale: 0.6, speed: 0.3, zIndex: 5 }   // Background - smaller, slower (parallax)
         };
+
+        const baseY = 30 + (index * 12) % 50;
 
         return {
           id: fish._id,
           fishData: fish,
           x: Math.random() * 80,
-          y: 30 + (index * 12) % 50,
+          y: baseY,
+          baseY: baseY, // Store original Y for sinusoidal movement
           depth: depthLayer,
           scale: depthConfig[depthLayer].scale,
-          speed: (0.3 + Math.random() * 0.5) * depthConfig[depthLayer].speed,
-          direction: Math.random() > 0.5 ? 1 : -1
+          speed: (0.2 + Math.random() * 0.4) * depthConfig[depthLayer].speed,
+          direction: Math.random() > 0.5 ? 1 : -1,
+          phaseOffset: Math.random() * Math.PI * 2, // Random phase for natural variety
+          burstCooldown: 0 // For burst swimming
         };
       });
       setSwimmingFish(positions);
@@ -62,21 +67,50 @@ const FishingGame = () => {
   }, [availableFish]);
 
   useEffect(() => {
-    // Animate swimming fish
+    // Animate swimming fish with natural sinusoidal movement
+    const startTime = Date.now();
+
     const swimInterval = setInterval(() => {
+      const currentTime = (Date.now() - startTime) / 1000; // Time in seconds
+
       setSwimmingFish(prev => prev.map(fish => {
-        let newX = fish.x + (fish.speed * fish.direction);
+        // Horizontal movement
+        let currentSpeed = fish.speed;
+
+        // Occasional burst swimming (5% chance)
+        let newBurstCooldown = fish.burstCooldown > 0 ? fish.burstCooldown - 1 : 0;
+        if (newBurstCooldown === 0 && Math.random() < 0.02) {
+          currentSpeed = fish.speed * 2.5;
+          newBurstCooldown = 40; // Cooldown frames
+        }
+
+        let newX = fish.x + (currentSpeed * fish.direction);
         let newDirection = fish.direction;
 
         // Reverse direction at boundaries
         if (newX <= 0 || newX >= 90) {
           newDirection = -fish.direction;
-          newX = fish.x + (fish.speed * newDirection);
+          newX = Math.max(0, Math.min(90, fish.x + (currentSpeed * newDirection)));
         }
 
-        return { ...fish, x: newX, direction: newDirection };
+        // Natural sinusoidal vertical movement (wave-like swimming)
+        const verticalAmplitude = 3; // pixels of vertical movement
+        const verticalFrequency = 1.5; // cycles per second
+        const verticalOffset = Math.sin(
+          (currentTime * verticalFrequency + fish.phaseOffset) * Math.PI
+        ) * verticalAmplitude;
+
+        const newY = fish.baseY + verticalOffset;
+
+        return {
+          ...fish,
+          x: newX,
+          y: newY,
+          direction: newDirection,
+          burstCooldown: newBurstCooldown
+        };
       }));
-    }, 50);
+    }, 50); // 20 FPS for smooth animation
 
     return () => clearInterval(swimInterval);
   }, []);
@@ -253,10 +287,76 @@ const FishingGame = () => {
 
     toast.success(`You caught a ${fish.name}!`);
 
+    // GAME FEEL: Screen shake effect
+    if (gameAreaRef.current) {
+      gameAreaRef.current.classList.add('shake');
+      setTimeout(() => {
+        gameAreaRef.current.classList.remove('shake');
+      }, 500);
+    }
+
+    // GAME FEEL: Splash particles
+    createSplashEffect(hookPosition.x, hookPosition.y);
+
+    // GAME FEEL: Sparkles for rare/expensive fish (>₹400/kg)
+    if (fish.pricePerKg > 400) {
+      createSparkleEffect(hookPosition.x, hookPosition.y);
+    }
+
     // Show preparation selection after a short delay
     setTimeout(() => {
       setShowPreparation(true);
     }, 1000);
+  };
+
+  // Create splash particle effect
+  const createSplashEffect = (x, y) => {
+    if (!gameAreaRef.current) return;
+    const container = gameAreaRef.current.querySelector('.ocean-container');
+
+    // Create 12 splash particles in radial pattern
+    for (let i = 0; i < 12; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'splash-particle';
+
+      const angle = (Math.PI * 2 * i) / 12;
+      const velocity = 60 + Math.random() * 40;
+
+      particle.style.left = `${x}%`;
+      particle.style.top = `${y}%`;
+      particle.style.setProperty('--vel-x', `${Math.cos(angle) * velocity}px`);
+      particle.style.setProperty('--vel-y', `${Math.sin(angle) * velocity}px`);
+
+      container.appendChild(particle);
+
+      setTimeout(() => particle.remove(), 800);
+    }
+  };
+
+  // Create sparkle effect for rare fish
+  const createSparkleEffect = (x, y) => {
+    if (!gameAreaRef.current) return;
+    const container = gameAreaRef.current.querySelector('.ocean-container');
+
+    // Create 8 sparkles
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const sparkle = document.createElement('div');
+        sparkle.className = 'sparkle';
+
+        const offsetX = (Math.random() - 0.5) * 10;
+        const offsetY = (Math.random() - 0.5) * 10;
+        const driftX = (Math.random() - 0.5) * 40;
+
+        sparkle.style.left = `calc(${x}% + ${offsetX}px)`;
+        sparkle.style.top = `calc(${y}% + ${offsetY}px)`;
+        sparkle.style.setProperty('--drift-x', `${driftX}px`);
+
+        container.appendChild(sparkle);
+
+        setTimeout(() => sparkle.remove(), 1800);
+      }, i * 150);
+    }
   };
 
   const handlePreparationSelect = (prep) => {
@@ -347,6 +447,34 @@ const FishingGame = () => {
       >
         {/* Ocean Background */}
         <div className="ocean-container">
+          {/* Professional Water Effects Layers */}
+          <div className="god-rays"></div>
+          <div className="caustics-enhanced"></div>
+          <div className="depth-fog"></div>
+
+          {/* Kelp/Seaweed */}
+          <div className="kelp" style={{ left: '15%', height: '180px', animationDelay: '0s' }}></div>
+          <div className="kelp" style={{ left: '35%', height: '150px', animationDelay: '0.5s' }}></div>
+          <div className="kelp" style={{ left: '60%', height: '200px', animationDelay: '1s' }}></div>
+          <div className="kelp" style={{ left: '80%', height: '165px', animationDelay: '1.5s' }}></div>
+          <div className="kelp" style={{ left: '92%', height: '140px', animationDelay: '2s' }}></div>
+
+          {/* Background Fish Schools */}
+          <div className="background-school" style={{
+            top: '55%',
+            width: '35px',
+            height: '18px',
+            animationDuration: '22s',
+            animationDelay: '0s'
+          }}></div>
+          <div className="background-school" style={{
+            top: '72%',
+            width: '28px',
+            height: '14px',
+            animationDuration: '28s',
+            animationDelay: '5s'
+          }}></div>
+
           <div className="ocean-surface"></div>
           <div className="ocean-waves"></div>
 
@@ -375,22 +503,45 @@ const FishingGame = () => {
           )}
 
           {/* Swimming Fish */}
-          {!caughtFish && swimmingFish.map((fish) => (
-            <div
-              key={fish.id}
-              className="swimming-fish"
-              data-depth={fish.depth}
-              style={{
-                left: `${fish.x}%`,
-                top: `${fish.y}%`,
-                transform: `scale(${fish.scale}) scaleX(${fish.direction})`,
-                zIndex: fish.depth === 1 ? 15 : fish.depth === 2 ? 10 : 5
-              }}
-            >
-              <img src={fish.fishData.image} alt={fish.fishData.name} />
-              <div className="fish-name-tag">{fish.fishData.name}</div>
-            </div>
-          ))}
+          {!caughtFish && swimmingFish.map((fish) => {
+            const hasSprite = fish.fishData.gameSprite && fish.fishData.spriteFrames > 1;
+            const spriteWidth = fish.fishData.spriteWidth || 64;
+            const frameCount = fish.fishData.spriteFrames || 1;
+            const totalWidth = spriteWidth * frameCount;
+            const fishSize = spriteWidth * fish.scale;
+
+            return (
+              <div
+                key={fish.id}
+                className="swimming-fish"
+                data-depth={fish.depth}
+                style={{
+                  left: `${fish.x}%`,
+                  top: `${fish.y}%`,
+                  width: `${fishSize}px`,
+                  height: `${fishSize}px`,
+                  transform: `scale(${fish.direction > 0 ? 1 : -1}, 1) rotate(${fish.direction * -3}deg)`,
+                  zIndex: fish.depth === 1 ? 15 : fish.depth === 2 ? 10 : 5
+                }}
+              >
+                {hasSprite ? (
+                  <div
+                    className="fish-sprite animated"
+                    style={{
+                      backgroundImage: `url(${fish.fishData.gameSprite})`,
+                      backgroundSize: `${totalWidth}px ${spriteWidth}px`,
+                      '--sprite-total-width': `${totalWidth}px`,
+                      '--frame-count': frameCount,
+                      '--swim-duration': `${0.6 + Math.random() * 0.3}s`
+                    }}
+                  />
+                ) : (
+                  <img src={fish.fishData.image} alt={fish.fishData.name} />
+                )}
+                <div className="fish-name-tag">{fish.fishData.name}</div>
+              </div>
+            );
+          })}
 
           {/* Caught Fish Display */}
           {caughtFish && !showPreparation && (

@@ -44,6 +44,21 @@ const fishSchema = new mongoose.Schema({
     type: Number,
     default: 5.0,
     min: [0.5, 'Maximum weight must be at least 0.5kg']
+  },
+  // Sprite animation fields for fishing game
+  gameSprite: {
+    type: String,
+    default: null // If null, falls back to image field
+  },
+  spriteFrames: {
+    type: Number,
+    default: 1, // 1 = static image, >1 = animated sprite sheet
+    min: [1, 'Sprite frames must be at least 1']
+  },
+  spriteWidth: {
+    type: Number,
+    default: 64, // Width of single frame in pixels
+    min: [16, 'Sprite width must be at least 16px']
   }
 }, {
   timestamps: true

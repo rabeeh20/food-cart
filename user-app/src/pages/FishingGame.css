@@ -1,3 +1,7 @@
+/* ============================================
+   REALISTIC FISHING GAME - PROFESSIONAL STYLES
+   ============================================ */
+
 /* Fishing Game Container */
 .fishing-game-container {
   min-height: 100vh;
@@ -63,7 +67,17 @@
   cursor: crosshair;
 }
 
-/* Ocean Container */
+.game-area.shake {
+  animation: screenShake 0.5s ease-in-out;
+}
+
+@keyframes screenShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+/* Ocean Container - Base */
 .ocean-container {
   width: 100%;
   height: 100%;
@@ -77,66 +91,99 @@
   overflow: hidden;
 }
 
-/* Sunlight Rays Effect */
-.ocean-container::before {
-  content: '';
+/* ============================================
+   PROFESSIONAL WATER EFFECTS
+   ============================================ */
+
+/* God Rays - Sunlight Beams Through Water */
+.god-rays {
   position: absolute;
   top: -10%;
   left: -10%;
   right: -10%;
   height: 120%;
-  background:
-    linear-gradient(125deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.15) 15%,
-      transparent 30%,
-      rgba(255, 255, 255, 0.08) 45%,
-      transparent 60%,
-      rgba(255, 255, 255, 0.12) 75%,
-      transparent 90%
-    );
-  animation: lightRays 12s ease-in-out infinite;
+  background: linear-gradient(
+    125deg,
+    transparent 0%,
+    rgba(255, 255, 200, 0.15) 8%,
+    transparent 16%,
+    rgba(255, 255, 200, 0.08) 24%,
+    transparent 32%,
+    rgba(255, 255, 200, 0.18) 40%,
+    transparent 48%,
+    rgba(255, 255, 200, 0.06) 56%,
+    transparent 64%,
+    rgba(255, 255, 200, 0.12) 72%,
+    transparent 80%
+  );
+  animation: godRaysMove 25s linear infinite;
+  mix-blend-mode: screen;
+  z-index: 16;
   pointer-events: none;
-  z-index: 3;
 }
 
-@keyframes lightRays {
-  0%, 100% {
-    transform: translateX(-5%) rotate(-3deg);
-    opacity: 0.4;
+@keyframes godRaysMove {
+  0% {
+    transform: translateX(-5%) rotate(-2deg);
+    opacity: 0.5;
   }
   50% {
-    transform: translateX(5%) rotate(3deg);
-    opacity: 0.7;
+    transform: translateX(5%) rotate(2deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-5%) rotate(-2deg);
+    opacity: 0.5;
   }
 }
 
-/* Water Caustics Effect (Bottom) */
-.ocean-container::after {
-  content: '';
+/* Enhanced Caustics - Water Light Patterns on Floor */
+.caustics-enhanced {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 50%;
+  height: 60%;
   background-image:
-    radial-gradient(ellipse at 25% 60%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 75% 40%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  animation: caustics 6s ease-in-out infinite;
+    radial-gradient(ellipse at 25% 60%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 40%, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 10% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 90% 65%, rgba(255, 255, 255, 0.11) 0%, transparent 45%);
+  animation: causticsDrift 8s ease-in-out infinite;
   pointer-events: none;
   z-index: 2;
 }
 
-@keyframes caustics {
+@keyframes causticsDrift {
   0%, 100% {
     transform: translateX(0) scale(1);
+    background-position: 0% 0%, 100% 0%, 50% 0%, 0% 100%, 100% 100%;
     opacity: 0.5;
   }
   50% {
-    transform: translateX(30px) scale(1.15);
+    transform: translateX(40px) scale(1.2);
+    background-position: 35% 100%, 65% 100%, 80% 50%, 20% 50%, 90% 70%;
     opacity: 0.8;
   }
+}
+
+/* Depth Fog - Gets Darker with Depth */
+.depth-fog {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 40, 80, 0) 0%,
+    rgba(0, 35, 70, 0.15) 35%,
+    rgba(0, 30, 60, 0.3) 65%,
+    rgba(0, 25, 50, 0.5) 100%
+  );
+  z-index: 3;
+  pointer-events: none;
 }
 
 /* Ocean Surface */
@@ -153,7 +200,7 @@
   z-index: 5;
 }
 
-/* Ocean Waves Animation */
+/* Ocean Waves */
 .ocean-waves {
   position: absolute;
   top: 0;
@@ -171,7 +218,62 @@
   50% { transform: translateY(-10px); }
 }
 
-/* Fishing Line */
+/* Kelp / Seaweed */
+.kelp {
+  position: absolute;
+  bottom: 0;
+  width: 18px;
+  background: linear-gradient(
+    to top,
+    #1a3d2e 0%,
+    #2d4a3d 40%,
+    #3a5a4d 70%,
+    #4a6a5d 100%
+  );
+  transform-origin: bottom center;
+  animation: kelpSway 3.5s ease-in-out infinite;
+  border-radius: 50% 50% 0 0;
+  z-index: 17;
+  pointer-events: none;
+}
+
+.kelp::after {
+  content: '';
+  position: absolute;
+  width: 120%;
+  height: 25%;
+  bottom: 35%;
+  left: -10%;
+  background: rgba(60, 90, 70, 0.6);
+  border-radius: 50%;
+}
+
+@keyframes kelpSway {
+  0%, 100% { transform: rotate(-10deg) scaleY(1); }
+  50% { transform: rotate(10deg) scaleY(1.05); }
+}
+
+/* Background Fish School (Silhouettes) */
+.background-school {
+  position: absolute;
+  opacity: 0.12;
+  filter: blur(2px);
+  background: #003366;
+  border-radius: 50%;
+  animation: schoolSwim linear;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes schoolSwim {
+  0% { transform: translateX(-100px); }
+  100% { transform: translateX(1400px); }
+}
+
+/* ============================================
+   FISHING HOOK & LINE
+   ============================================ */
+
 .fishing-line {
   position: absolute;
   top: 0;
@@ -182,7 +284,6 @@
   pointer-events: none;
 }
 
-/* Fishing Hook */
 .fishing-hook {
   position: absolute;
   font-size: 32px;
@@ -205,158 +306,100 @@
   50% { transform: translate(-50%, -50%) scale(1.2) rotate(5deg); }
 }
 
-/* Swimming Fish - Enhanced Realistic Animation */
+/* ============================================
+   ANIMATED FISH SPRITES
+   ============================================ */
+
+/* Swimming Fish Container */
 .swimming-fish {
   position: absolute;
-  width: 80px;
-  height: 80px;
   transform-origin: center;
-  transition: transform 0.3s;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+  transition: transform 0.2s ease-out;
   will-change: transform;
+  pointer-events: none;
 }
 
+/* Fish Sprite (Animated or Static) */
+.fish-sprite {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: cover;
+  image-rendering: pixelated; /* For pixel art sprites */
+  will-change: background-position;
+}
+
+/* Sprite Animation Keyframes */
+@keyframes fishSpriteSwim {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: calc(var(--sprite-total-width) * -1);
+  }
+}
+
+.fish-sprite.animated {
+  animation: fishSpriteSwim var(--swim-duration, 0.8s) steps(var(--frame-count, 8)) infinite;
+}
+
+/* Fallback: Static Image Fish */
 .swimming-fish img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  animation:
-    swimUndulation 1.2s ease-in-out infinite,
-    bodyBreathing 3.5s ease-in-out infinite;
-  will-change: transform;
+  animation: swimUndulation 1.2s ease-in-out infinite;
 }
 
-/* Advanced Swimming - Body Undulation */
+/* Natural Swimming Undulation */
 @keyframes swimUndulation {
   0%, 100% {
     transform: translateY(0px) rotate(0deg) scaleY(1);
   }
-  15% {
-    transform: translateY(-4px) rotate(1.5deg) scaleY(0.98);
-  }
-  35% {
-    transform: translateY(-2px) rotate(3deg) scaleY(1.02);
+  25% {
+    transform: translateY(-3px) rotate(2deg) scaleY(0.98);
   }
   50% {
     transform: translateY(0px) rotate(0deg) scaleY(1);
   }
-  65% {
-    transform: translateY(2px) rotate(-3deg) scaleY(0.98);
-  }
-  85% {
-    transform: translateY(4px) rotate(-1.5deg) scaleY(1.02);
-  }
-}
-
-/* Breathing Effect */
-@keyframes bodyBreathing {
-  0%, 100% {
-    filter: brightness(1);
-    transform: scale(1);
-  }
-  50% {
-    filter: brightness(1.05);
-    transform: scale(1.02);
-  }
-}
-
-/* Tail Wagging Effect (using ::after pseudo-element) */
-.swimming-fish::after {
-  content: '';
-  position: absolute;
-  right: -8px;
-  top: 50%;
-  width: 20px;
-  height: 30px;
-  background: radial-gradient(ellipse at left, rgba(255, 255, 255, 0.15), transparent 70%);
-  transform: translateY(-50%);
-  animation: tailWag 0.5s ease-in-out infinite;
-  pointer-events: none;
-  z-index: -1;
-}
-
-@keyframes tailWag {
-  0%, 100% {
-    transform: translateY(-50%) rotate(0deg) scaleX(1);
-    opacity: 0.3;
-  }
-  25% {
-    transform: translateY(-55%) rotate(-12deg) scaleX(0.85);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translateY(-50%) rotate(0deg) scaleX(1);
-    opacity: 0.3;
-  }
   75% {
-    transform: translateY(-45%) rotate(12deg) scaleX(0.85);
-    opacity: 0.5;
-  }
-}
-
-/* Swimming Trail Effect */
-.swimming-fish::before {
-  content: '';
-  position: absolute;
-  width: 40px;
-  height: 3px;
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(255, 255, 255, 0.25) 30%,
-    rgba(255, 255, 255, 0.15) 60%,
-    transparent
-  );
-  left: -40px;
-  top: 50%;
-  transform: translateY(-50%);
-  animation: trail 1.2s ease-in-out infinite;
-  pointer-events: none;
-  opacity: 0.6;
-}
-
-@keyframes trail {
-  0%, 100% {
-    opacity: 0;
-    transform: translateY(-50%) scaleX(0);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translateY(-50%) scaleX(1);
+    transform: translateY(3px) rotate(-2deg) scaleY(0.98);
   }
 }
 
 /* Depth Layer Variations */
 .swimming-fish[data-depth="1"] {
   z-index: 15;
-  filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.35)) brightness(1.1);
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.4)) brightness(1.15);
 }
 
 .swimming-fish[data-depth="2"] {
   z-index: 10;
-  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.25)) brightness(1);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3)) brightness(1);
 }
 
 .swimming-fish[data-depth="3"] {
   z-index: 5;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15)) brightness(0.85) blur(0.8px);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2)) brightness(0.82) blur(1px);
 }
 
 /* Fish Name Tag */
-.swimming-fish .fish-name-tag {
+.fish-name-tag {
   position: absolute;
-  bottom: -25px;
+  bottom: -30px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   color: white;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 6px;
   font-size: 11px;
   white-space: nowrap;
   opacity: 0;
   transition: opacity 0.2s;
   pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   z-index: 20;
 }
 
@@ -364,20 +407,24 @@
   opacity: 1;
 }
 
+/* ============================================
+   PARTICLE EFFECTS
+   ============================================ */
+
 /* Bubble Particles */
 .bubble {
   position: absolute;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%,
-    rgba(255, 255, 255, 0.9),
-    rgba(255, 255, 255, 0.6) 40%,
-    rgba(200, 230, 255, 0.3) 70%,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.7) 35%,
+    rgba(200, 230, 255, 0.4) 65%,
     transparent
   );
   box-shadow:
-    inset -2px -2px 6px rgba(255, 255, 255, 0.6),
-    inset 2px 2px 6px rgba(0, 100, 150, 0.2),
-    0 2px 8px rgba(0, 0, 0, 0.15);
+    inset -3px -3px 8px rgba(255, 255, 255, 0.7),
+    inset 3px 3px 8px rgba(0, 100, 150, 0.25),
+    0 3px 10px rgba(0, 0, 0, 0.2);
   pointer-events: none;
   z-index: 12;
 }
@@ -388,22 +435,22 @@
     opacity: 0;
   }
   5% {
-    opacity: 0.8;
+    opacity: 0.85;
   }
   50% {
-    transform: translateY(-300px) translateX(var(--bubble-drift-x, 25px)) scale(1.15);
-    opacity: 0.6;
+    transform: translateY(-300px) translateX(var(--bubble-drift-x, 25px)) scale(1.2);
+    opacity: 0.7;
   }
   100% {
-    transform: translateY(-600px) translateX(var(--bubble-drift-x-end, -15px)) scale(0.7);
+    transform: translateY(-650px) translateX(var(--bubble-drift-x-end, -20px)) scale(0.6);
     opacity: 0;
   }
 }
 
 @keyframes bubbleWobble {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-3px); }
-  75% { transform: translateX(3px); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 /* Ambient Floating Particles */
@@ -411,11 +458,11 @@
   position: absolute;
   width: 3px;
   height: 3px;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   pointer-events: none;
   z-index: 4;
-  animation: floatParticle 8s linear infinite;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
 }
 
 @keyframes floatParticle {
@@ -424,16 +471,67 @@
     opacity: 0;
   }
   10% {
-    opacity: 0.6;
+    opacity: 0.7;
   }
   90% {
-    opacity: 0.3;
+    opacity: 0.4;
   }
   100% {
-    transform: translate(var(--particle-drift-x, 50px), var(--particle-drift-y, -400px));
+    transform: translate(var(--particle-drift-x, 50px), var(--particle-drift-y, -450px));
     opacity: 0;
   }
 }
+
+/* Splash Particles (on catch) */
+.splash-particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, white, rgba(135, 206, 235, 0.7));
+  border-radius: 50%;
+  animation: splashFly 0.8s ease-out forwards;
+  z-index: 25;
+  pointer-events: none;
+}
+
+@keyframes splashFly {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--vel-x), var(--vel-y)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* Sparkle Effects (rare fish) */
+.sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: gold;
+  border-radius: 50%;
+  animation: sparkleFloat 1.8s ease-out forwards;
+  box-shadow: 0 0 12px gold, 0 0 6px rgba(255, 215, 0, 0.8);
+  z-index: 24;
+  pointer-events: none;
+}
+
+@keyframes sparkleFloat {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--drift-x), -100px) scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   CAUGHT FISH & MODALS
+   ============================================ */
 
 /* Caught Fish Display */
 .caught-fish-display {
@@ -445,8 +543,8 @@
   padding: 40px;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  animation: popIn 0.5s ease-out;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   z-index: 20;
 }
 
@@ -460,15 +558,12 @@
   width: 150px;
   height: 150px;
   object-fit: contain;
-  animation: fishStruggle 0.3s ease-in-out infinite;
+  animation: fishStruggle 0.25s ease-in-out infinite;
 }
 
-/* Fish Struggle Animation when Caught */
 @keyframes fishStruggle {
-  0%, 100% { transform: rotate(-8deg) scale(1); }
-  25% { transform: rotate(8deg) scale(1.05); }
-  50% { transform: rotate(-8deg) scale(0.95); }
-  75% { transform: rotate(8deg) scale(1.05); }
+  0%, 100% { transform: rotate(-10deg) scale(1); }
+  50% { transform: rotate(10deg) scale(1.05); }
 }
 
 .caught-fish-display .fish-weight {
@@ -480,7 +575,7 @@
 
 @keyframes popIn {
   0% {
-    transform: translate(-50%, -50%) scale(0.5);
+    transform: translate(-50%, -50%) scale(0.3);
     opacity: 0;
   }
   100% {
@@ -496,7 +591,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -511,8 +606,8 @@
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease-out;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 @keyframes fadeIn {
@@ -522,11 +617,11 @@
 
 @keyframes slideUp {
   from {
-    transform: translateY(50px);
+    transform: translateY(60px) scale(0.9);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
@@ -591,7 +686,7 @@
 /* Preparation Grid */
 .preparation-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 16px;
   padding: 24px;
 }
@@ -602,24 +697,25 @@
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   background: white;
 }
 
 .preparation-card:hover {
   border-color: var(--primary-color);
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.25);
 }
 
 .preparation-card.selected {
   border-color: var(--primary-color);
   background: #fff5f0;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.35);
+  transform: scale(1.05);
 }
 
 .preparation-card .prep-icon {
-  font-size: 48px;
+  font-size: 52px;
   margin-bottom: 12px;
 }
 
@@ -636,7 +732,7 @@
 }
 
 .preparation-card .total-price {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--primary-color);
   margin-top: 8px;
@@ -650,7 +746,7 @@
   gap: 12px;
   width: calc(100% - 48px);
   margin: 0 24px 24px;
-  padding: 16px;
+  padding: 18px;
   background: var(--primary-color);
   color: white;
   border: none;
@@ -663,8 +759,8 @@
 
 .add-to-cart-btn-large:hover:not(:disabled) {
   background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
 }
 
 .add-to-cart-btn-large:disabled {
@@ -680,7 +776,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -691,24 +787,24 @@
 .success-modal {
   background: white;
   border-radius: 16px;
-  padding: 40px;
+  padding: 45px;
   text-align: center;
-  max-width: 400px;
+  max-width: 420px;
   width: 90%;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
-  animation: bounceIn 0.5s ease-out;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 @keyframes bounceIn {
   0% {
-    transform: scale(0.3);
+    transform: scale(0.2);
     opacity: 0;
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.08);
   }
   70% {
-    transform: scale(0.9);
+    transform: scale(0.92);
   }
   100% {
     transform: scale(1);
@@ -717,27 +813,27 @@
 }
 
 .success-modal .success-icon {
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   background: #28a745;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
-  margin: 0 auto 20px;
-  animation: pulse 1s ease-in-out infinite;
+  font-size: 52px;
+  margin: 0 auto 24px;
+  animation: pulse 1.2s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+  50% { transform: scale(1.12); box-shadow: 0 0 0 15px rgba(40, 167, 69, 0); }
 }
 
 .success-modal h2 {
   margin: 0 0 12px;
-  font-size: 24px;
+  font-size: 26px;
   color: var(--dark-color);
 }
 
@@ -748,16 +844,16 @@
 }
 
 .success-modal .success-price {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--primary-color);
-  margin: 16px 0;
+  margin: 20px 0;
 }
 
 .success-modal .modal-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 14px;
+  margin-top: 28px;
 }
 
 .catch-another-btn,
@@ -767,13 +863,13 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px;
+  padding: 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .catch-another-btn {
@@ -784,6 +880,7 @@
 .catch-another-btn:hover {
   background: #dee2e6;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .view-cart-btn {
@@ -794,7 +891,7 @@
 .view-cart-btn:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
 }
 
 /* Loading Screen */
@@ -808,13 +905,13 @@
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 @keyframes spin {
@@ -847,11 +944,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 14px 28px;
   background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -860,10 +957,13 @@
 .back-btn:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.3);
 }
 
-/* Responsive Design */
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
 @media (max-width: 768px) {
   .game-header {
     flex-direction: column;
@@ -880,8 +980,8 @@
   }
 
   .swimming-fish {
-    width: 60px;
-    height: 60px;
+    width: 55px !important;
+    height: 55px !important;
   }
 
   .fishing-hook {
@@ -893,7 +993,7 @@
   }
 
   .success-modal {
-    padding: 30px 20px;
+    padding: 35px 25px;
   }
 
   .success-modal .modal-actions {
@@ -905,14 +1005,18 @@
   }
 
   .caught-fish-display img {
-    width: 100px;
-    height: 100px;
+    width: 110px;
+    height: 110px;
+  }
+
+  .kelp {
+    width: 14px;
   }
 }
 
 @media (max-width: 480px) {
   .game-area {
-    height: 400px;
+    height: 450px;
   }
 
   .preparation-grid {
@@ -922,5 +1026,10 @@
   .back-btn-small span,
   .cart-btn-small span {
     display: none;
+  }
+
+  .swimming-fish {
+    width: 48px !important;
+    height: 48px !important;
   }
 }
