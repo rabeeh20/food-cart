@@ -11,6 +11,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Orders from './pages/Orders';
 import Addresses from './pages/Addresses';
+import FishingGame from './pages/FishingGame';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -33,6 +34,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/fishing-game" element={<FishingGame />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route
                   path="/checkout"

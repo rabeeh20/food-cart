@@ -69,4 +69,11 @@ export const paymentAPI = {
   verifyPayment: (data) => api.post('/payment/verify-payment', data)
 };
 
+// Fish APIs
+export const fishAPI = {
+  getAvailable: () => api.get('/fish/available'),
+  getPreparationStyles: () => api.get('/fish/preparation-styles'),
+  getGameSettings: () => api.get('/fish/game-settings')
+};
+
 export default api;

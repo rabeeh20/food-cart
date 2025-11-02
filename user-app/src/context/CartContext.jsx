@@ -16,12 +16,41 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (item) => {
+  const addToCart = (item, variant = null) => {
     setCart(prevCart => {
-      const existingItem = prevCart.find(i => i._id === item._id);
+      // For fish with variants, create unique identifier
+      if (variant) {
+        const existingItem = prevCart.find(i =>
+          i._id === item._id &&
+          i.variant?.preparation === variant.preparation &&
+          i.variant?.weight === variant.weight
+        );
+
+        if (existingItem) {
+          return prevCart.map(i =>
+            (i._id === item._id &&
+             i.variant?.preparation === variant.preparation &&
+             i.variant?.weight === variant.weight)
+              ? { ...i, quantity: i.quantity + 1 }
+              : i
+          );
+        }
+
+        // Add new fish with variant
+        return [...prevCart, {
+          ...item,
+          quantity: 1,
+          variant,
+          displayName: `${item.name} (${variant.preparation}) - ${variant.weight}kg`,
+          finalPrice: (variant.weight * variant.pricePerKg) + variant.preparationPrice
+        }];
+      }
+
+      // Regular menu items (non-fish)
+      const existingItem = prevCart.find(i => i._id === item._id && !i.variant);
       if (existingItem) {
         return prevCart.map(i =>
-          i._id === item._id
+          (i._id === item._id && !i.variant)
             ? { ...i, quantity: i.quantity + 1 }
             : i
         );
@@ -51,7 +80,11 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartTotal = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cart.reduce((total, item) => {
+      // Fish items with variants use finalPrice
+      const itemPrice = item.variant ? item.finalPrice : item.price;
+      return total + (itemPrice * item.quantity);
+    }, 0);
   };
 
   const getCartCount = () => {

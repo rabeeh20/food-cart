@@ -14,6 +14,7 @@ import orderRoutes from './routes/order.js';
 import addressRoutes from './routes/address.js';
 import paymentRoutes from './routes/payment.js';
 import adminRoutes from './routes/admin.js';
+import fishRoutes from './routes/fish.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -54,6 +55,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/fish', fishRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
