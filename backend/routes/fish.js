@@ -1,6 +1,6 @@
 import express from 'express';
 import * as fishController from '../controllers/fishController.js';
-import { verifySuperAdmin } from '../middleware/authMiddleware.js';
+import { verifySuperAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
