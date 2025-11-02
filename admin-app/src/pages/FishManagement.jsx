@@ -22,7 +22,10 @@ const FishManagement = () => {
     isAvailable: true,
     description: '',
     minWeight: '1.0',
-    maxWeight: '5.0'
+    maxWeight: '5.0',
+    gameSprite: '',
+    spriteFrames: 8,
+    spriteWidth: 64
   });
 
   const speciesOptions = [
@@ -79,6 +82,33 @@ const FishManagement = () => {
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error('Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSpriteUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('Sprite image size should be less than 20MB');
+      return;
+    }
+
+    setUploading(true);
+    const formDataImg = new FormData();
+    formDataImg.append('image', file);
+
+    try {
+      const response = await fishAPI.uploadImage(formDataImg);
+      if (response.data.success) {
+        setFormData({ ...formData, gameSprite: response.data.imageUrl });
+        toast.success('Sprite uploaded successfully');
+      }
+    } catch (error) {
+      console.error('Error uploading sprite:', error);
+      toast.error('Failed to upload sprite');
     } finally {
       setUploading(false);
     }
@@ -156,7 +186,10 @@ const FishManagement = () => {
         isAvailable: fishItem.isAvailable,
         description: fishItem.description || '',
         minWeight: fishItem.minWeight,
-        maxWeight: fishItem.maxWeight
+        maxWeight: fishItem.maxWeight,
+        gameSprite: fishItem.gameSprite || '',
+        spriteFrames: fishItem.spriteFrames || 8,
+        spriteWidth: fishItem.spriteWidth || 64
       });
     } else {
       setEditingFish(null);
@@ -169,7 +202,10 @@ const FishManagement = () => {
         isAvailable: true,
         description: '',
         minWeight: '1.0',
-        maxWeight: '5.0'
+        maxWeight: '5.0',
+        gameSprite: '',
+        spriteFrames: 8,
+        spriteWidth: 64
       });
     }
     setShowModal(true);
@@ -398,7 +434,7 @@ const FishManagement = () => {
               </div>
 
               <div className="form-group">
-                <label>Fish Image *</label>
+                <label>Fish Image (for Cart) *</label>
                 <div className="image-upload-area">
                   {formData.image ? (
                     <div className="image-preview">
@@ -424,6 +460,64 @@ const FishManagement = () => {
                       />
                     </label>
                   )}
+                </div>
+                <small style={{ color: '#666', fontSize: '12px' }}>This image will be shown in the cart and orders</small>
+              </div>
+
+              <div className="form-group">
+                <label>Game Sprite (Optional)</label>
+                <div className="image-upload-area">
+                  {formData.gameSprite ? (
+                    <div className="image-preview">
+                      <img src={formData.gameSprite} alt="Sprite Preview" />
+                      <button
+                        type="button"
+                        className="remove-image-btn"
+                        onClick={() => setFormData({ ...formData, gameSprite: '' })}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="upload-label">
+                      <Upload size={32} />
+                      <span>{uploading ? 'Uploading sprite...' : 'Click to upload sprite sheet'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleSpriteUpload}
+                        disabled={uploading}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  )}
+                </div>
+                <small style={{ color: '#666', fontSize: '12px' }}>Upload a horizontal sprite sheet for fishing game animation</small>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Sprite Frames</label>
+                  <input
+                    type="number"
+                    value={formData.spriteFrames}
+                    onChange={(e) => setFormData({ ...formData, spriteFrames: e.target.value })}
+                    placeholder="8"
+                    min="1"
+                  />
+                  <small style={{ color: '#666', fontSize: '12px' }}>Number of animation frames</small>
+                </div>
+
+                <div className="form-group">
+                  <label>Sprite Width (px)</label>
+                  <input
+                    type="number"
+                    value={formData.spriteWidth}
+                    onChange={(e) => setFormData({ ...formData, spriteWidth: e.target.value })}
+                    placeholder="64"
+                    min="16"
+                  />
+                  <small style={{ color: '#666', fontSize: '12px' }}>Width of each frame in pixels</small>
                 </div>
               </div>
 

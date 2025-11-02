@@ -15,7 +15,7 @@ export const getAvailableFish = async (req, res) => {
     }
 
     const fish = await Fish.find({ isAvailable: true, availableStock: { $gt: 0 } })
-      .select('name species image pricePerKg minWeight maxWeight description')
+      .select('name species image pricePerKg minWeight maxWeight description gameSprite spriteFrames spriteWidth')
       .sort({ name: 1 });
 
     res.status(200).json({
@@ -83,7 +83,7 @@ export const getFishById = async (req, res) => {
 // Create new fish (admin only)
 export const createFish = async (req, res) => {
   try {
-    const { name, species, image, pricePerKg, availableStock, isAvailable, description, minWeight, maxWeight } = req.body;
+    const { name, species, image, pricePerKg, availableStock, isAvailable, description, minWeight, maxWeight, gameSprite, spriteFrames, spriteWidth } = req.body;
 
     const fish = await Fish.create({
       name,
@@ -94,7 +94,10 @@ export const createFish = async (req, res) => {
       isAvailable,
       description,
       minWeight,
-      maxWeight
+      maxWeight,
+      gameSprite,
+      spriteFrames,
+      spriteWidth
     });
 
     res.status(201).json({
