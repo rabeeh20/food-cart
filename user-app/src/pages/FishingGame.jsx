@@ -579,30 +579,51 @@ const FishingGame = () => {
 
             {/* Weight Selection */}
             <div style={{ marginBottom: '20px' }}>
-              <h3 style={{ marginBottom: '10px', fontSize: '16px' }}>Select Weight</h3>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {caughtFish.weightOptions?.map((weight) => (
-                  <button
-                    key={weight}
-                    onClick={() => setFishWeight(weight)}
-                    className={`weight-option ${fishWeight === weight ? 'selected' : ''}`}
-                    style={{
-                      padding: '10px 20px',
-                      border: fishWeight === weight ? '2px solid #ff6b6b' : '2px solid #ddd',
-                      borderRadius: '8px',
-                      background: fishWeight === weight ? '#fff5f5' : 'white',
-                      cursor: 'pointer',
-                      fontWeight: fishWeight === weight ? 'bold' : 'normal',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {weight}kg
-                  </button>
-                ))}
+              <h3 style={{ marginBottom: '12px', fontSize: '18px', fontWeight: 'bold' }}>Select Weight</h3>
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                overflowX: 'auto',
+                paddingBottom: '10px',
+                scrollBehavior: 'smooth'
+              }}>
+                {caughtFish.weightOptions && caughtFish.weightOptions.length > 0 ? (
+                  caughtFish.weightOptions.map((weight) => (
+                    <button
+                      key={weight}
+                      onClick={() => setFishWeight(weight)}
+                      style={{
+                        minWidth: '100px',
+                        padding: '14px 24px',
+                        border: fishWeight === weight ? '3px solid #ff6b6b' : '2px solid #ddd',
+                        borderRadius: '12px',
+                        background: fishWeight === weight ? '#ff6b6b' : 'white',
+                        color: fishWeight === weight ? 'white' : '#333',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: '16px',
+                        transition: 'all 0.3s',
+                        boxShadow: fishWeight === weight ? '0 4px 12px rgba(255, 107, 107, 0.3)' : '0 2px 4px rgba(0,0,0,0.1)',
+                        transform: fishWeight === weight ? 'scale(1.05)' : 'scale(1)'
+                      }}
+                    >
+                      {weight}kg
+                    </button>
+                  ))
+                ) : (
+                  <p style={{ color: '#999', fontStyle: 'italic' }}>No weight options available</p>
+                )}
               </div>
             </div>
 
-            <div className="preparation-grid">
+            <h3 style={{ marginBottom: '12px', fontSize: '18px', fontWeight: 'bold' }}>Choose Preparation Style</h3>
+            <div className="preparation-grid" style={{
+              display: 'flex',
+              gap: '12px',
+              overflowX: 'auto',
+              paddingBottom: '10px',
+              scrollBehavior: 'smooth'
+            }}>
               {preparationStyles.map((prep) => {
                 const basePrice = fishWeight ? fishWeight * caughtFish.pricePerKg : 0;
                 const totalPrice = basePrice + prep.price;
@@ -610,19 +631,48 @@ const FishingGame = () => {
                 return (
                   <div
                     key={prep.name}
-                    className={`preparation-card ${selectedPreparation?.name === prep.name ? 'selected' : ''}`}
                     onClick={() => handlePreparationSelect(prep)}
+                    style={{
+                      minWidth: '140px',
+                      padding: '16px',
+                      border: selectedPreparation?.name === prep.name ? '3px solid #ff6b6b' : '2px solid #ddd',
+                      borderRadius: '12px',
+                      background: selectedPreparation?.name === prep.name ? '#fff5f5' : 'white',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      transition: 'all 0.3s',
+                      boxShadow: selectedPreparation?.name === prep.name ? '0 4px 12px rgba(255, 107, 107, 0.3)' : '0 2px 4px rgba(0,0,0,0.1)',
+                      transform: selectedPreparation?.name === prep.name ? 'scale(1.05)' : 'scale(1)'
+                    }}
                   >
-                    <div className="prep-icon">
+                    <div style={{ fontSize: '36px', marginBottom: '8px' }}>
                       {prep.name === 'Fry' && '🍳'}
                       {prep.name === 'Masala' && '🌶️'}
                       {prep.name === 'Grilled' && '🔥'}
                       {prep.name === 'Curry' && '🍛'}
                     </div>
-                    <h4>{prep.name}</h4>
-                    <p className="prep-price">+₹{prep.price}</p>
-                    {fishWeight && <div className="total-price">₹{totalPrice.toFixed(0)}</div>}
-                    {!fishWeight && <div className="total-price" style={{ opacity: 0.5 }}>Select weight</div>}
+                    <h4 style={{ margin: '8px 0', fontSize: '16px', fontWeight: 'bold' }}>{prep.name}</h4>
+                    <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>+₹{prep.price}</p>
+                    {fishWeight && (
+                      <div style={{
+                        marginTop: '8px',
+                        fontWeight: 'bold',
+                        color: '#ff6b6b',
+                        fontSize: '18px'
+                      }}>
+                        ₹{totalPrice.toFixed(0)}
+                      </div>
+                    )}
+                    {!fishWeight && (
+                      <div style={{
+                        marginTop: '8px',
+                        opacity: 0.5,
+                        fontSize: '12px',
+                        fontStyle: 'italic'
+                      }}>
+                        Select weight
+                      </div>
+                    )}
                   </div>
                 );
               })}
