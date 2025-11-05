@@ -1,6 +1,7 @@
 import express from 'express';
 import Order from '../models/Order.js';
 import MenuItem from '../models/MenuItem.js';
+import Fish from '../models/Fish.js';
 import { verifyUser } from '../middleware/auth.js';
 import { sendOrderConfirmation } from '../utils/email.js';
 
@@ -30,38 +31,82 @@ router.post('/', verifyUser, async (req, res) => {
     const orderItems = [];
 
     for (const item of items) {
-      const menuItem = await MenuItem.findById(item.menuItem);
+      // Check if it's a fish item
+      if (item.isFish && item.variant) {
+        // Handle fish item from fishing game
+        const fish = await Fish.findById(item.menuItem);
 
-      if (!menuItem) {
-        return res.status(404).json({
-          success: false,
-          message: `Menu item not found: ${item.menuItem}`
+        if (!fish) {
+          return res.status(404).json({
+            success: false,
+            message: `Fish item not found: ${item.menuItem}`
+          });
+        }
+
+        if (!fish.isAvailable) {
+          return res.status(400).json({
+            success: false,
+            message: `${fish.name} is currently unavailable`
+          });
+        }
+
+        // Check fish stock
+        if (fish.availableStock < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `${fish.name} is out of stock`
+          });
+        }
+
+        // Calculate fish item price based on variant
+        const { weight, pricePerKg, preparationPrice } = item.variant;
+        const fishPrice = (weight * pricePerKg) + preparationPrice;
+
+        orderItems.push({
+          menuItem: fish._id,
+          name: `${fish.name} (${item.variant.preparation}) - ${weight}kg`,
+          price: fishPrice,
+          quantity: item.quantity,
+          variant: item.variant,
+          isFish: true
         });
-      }
 
-      if (!menuItem.isAvailable) {
-        return res.status(400).json({
-          success: false,
-          message: `${menuItem.name} is currently unavailable`
+        totalAmount += fishPrice * item.quantity;
+      } else {
+        // Handle regular menu item
+        const menuItem = await MenuItem.findById(item.menuItem);
+
+        if (!menuItem) {
+          return res.status(404).json({
+            success: false,
+            message: `Menu item not found: ${item.menuItem}`
+          });
+        }
+
+        if (!menuItem.isAvailable) {
+          return res.status(400).json({
+            success: false,
+            message: `${menuItem.name} is currently unavailable`
+          });
+        }
+
+        // Check stock availability
+        if (menuItem.stock < item.quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `${menuItem.name} is out of stock or insufficient quantity available`
+          });
+        }
+
+        orderItems.push({
+          menuItem: menuItem._id,
+          name: menuItem.name,
+          price: menuItem.price,
+          quantity: item.quantity
         });
+
+        totalAmount += menuItem.price * item.quantity;
       }
-
-      // Check stock availability
-      if (menuItem.stock < item.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `${menuItem.name} is out of stock or insufficient quantity available`
-        });
-      }
-
-      orderItems.push({
-        menuItem: menuItem._id,
-        name: menuItem.name,
-        price: menuItem.price,
-        quantity: item.quantity
-      });
-
-      totalAmount += menuItem.price * item.quantity;
     }
 
     // Create order
@@ -92,19 +137,38 @@ router.post('/', verifyUser, async (req, res) => {
     if (paymentMethod === 'cod') {
       // Reduce stock for each item
       for (const item of items) {
-        const updatedItem = await MenuItem.findByIdAndUpdate(
-          item.menuItem,
-          { $inc: { stock: -item.quantity } },
-          { new: true }
-        );
+        if (item.isFish) {
+          // Reduce fish stock
+          const updatedFish = await Fish.findByIdAndUpdate(
+            item.menuItem,
+            { $inc: { availableStock: -item.quantity } },
+            { new: true }
+          );
 
-        // Emit stock update event to all clients
-        if (updatedItem) {
-          io.emit('stock-updated', {
-            itemId: updatedItem._id,
-            item: updatedItem,
-            newStock: updatedItem.stock
-          });
+          // Emit fish stock update event
+          if (updatedFish) {
+            io.emit('fish-stock-updated', {
+              fishId: updatedFish._id,
+              fish: updatedFish,
+              newStock: updatedFish.availableStock
+            });
+          }
+        } else {
+          // Reduce menu item stock
+          const updatedItem = await MenuItem.findByIdAndUpdate(
+            item.menuItem,
+            { $inc: { stock: -item.quantity } },
+            { new: true }
+          );
+
+          // Emit stock update event to all clients
+          if (updatedItem) {
+            io.emit('stock-updated', {
+              itemId: updatedItem._id,
+              item: updatedItem,
+              newStock: updatedItem.stock
+            });
+          }
         }
       }
 

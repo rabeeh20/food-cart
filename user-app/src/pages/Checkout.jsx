@@ -103,7 +103,12 @@ const Checkout = () => {
         const orderData = {
           items: cart.map(item => ({
             menuItem: item._id,
-            quantity: item.quantity
+            quantity: item.quantity,
+            // Include variant data for fish items
+            ...(item.variant && {
+              variant: item.variant,
+              isFish: true
+            })
           })),
           deliveryAddress: selectedAddress,
           paymentMethod: 'cod'
@@ -148,7 +153,12 @@ const Checkout = () => {
       const tempOrderData = {
         items: cart.map(item => ({
           menuItem: item._id,
-          quantity: item.quantity
+          quantity: item.quantity,
+          // Include variant data for fish items
+          ...(item.variant && {
+            variant: item.variant,
+            isFish: true
+          })
         })),
         deliveryAddress: selectedAddress,
         paymentMethod: 'razorpay'
