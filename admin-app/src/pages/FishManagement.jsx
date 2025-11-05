@@ -21,12 +21,13 @@ const FishManagement = () => {
     availableStock: '',
     isAvailable: true,
     description: '',
-    minWeight: '1.0',
-    maxWeight: '5.0',
+    weightOptions: [0.5, 1, 1.5, 2, 2.5],
     gameSprite: '',
     spriteFrames: 8,
     spriteWidth: 64
   });
+
+  const [weightInput, setWeightInput] = useState('');
 
   const speciesOptions = [
     'Pomfret', 'Kingfish', 'Mackerel', 'Tuna', 'Salmon',
@@ -174,6 +175,34 @@ const FishManagement = () => {
     }
   };
 
+  const addWeightOption = () => {
+    const weight = parseFloat(weightInput);
+    if (isNaN(weight) || weight < 0.1 || weight > 10) {
+      toast.error('Please enter a valid weight between 0.1kg and 10kg');
+      return;
+    }
+    if (formData.weightOptions.includes(weight)) {
+      toast.error('This weight option already exists');
+      return;
+    }
+    setFormData({
+      ...formData,
+      weightOptions: [...formData.weightOptions, weight].sort((a, b) => a - b)
+    });
+    setWeightInput('');
+  };
+
+  const removeWeightOption = (weight) => {
+    if (formData.weightOptions.length <= 1) {
+      toast.error('At least one weight option is required');
+      return;
+    }
+    setFormData({
+      ...formData,
+      weightOptions: formData.weightOptions.filter(w => w !== weight)
+    });
+  };
+
   const openModal = (fishItem = null) => {
     if (fishItem) {
       setEditingFish(fishItem);
@@ -185,8 +214,7 @@ const FishManagement = () => {
         availableStock: fishItem.availableStock,
         isAvailable: fishItem.isAvailable,
         description: fishItem.description || '',
-        minWeight: fishItem.minWeight,
-        maxWeight: fishItem.maxWeight,
+        weightOptions: fishItem.weightOptions || [0.5, 1, 1.5, 2, 2.5],
         gameSprite: fishItem.gameSprite || '',
         spriteFrames: fishItem.spriteFrames || 8,
         spriteWidth: fishItem.spriteWidth || 64
@@ -201,13 +229,13 @@ const FishManagement = () => {
         availableStock: '',
         isAvailable: true,
         description: '',
-        minWeight: '1.0',
-        maxWeight: '5.0',
+        weightOptions: [0.5, 1, 1.5, 2, 2.5],
         gameSprite: '',
         spriteFrames: 8,
         spriteWidth: 64
       });
     }
+    setWeightInput('');
     setShowModal(true);
   };
 
@@ -304,7 +332,7 @@ const FishManagement = () => {
                       {fishItem.availableStock}
                     </span>
                   </td>
-                  <td>{fishItem.minWeight}kg - {fishItem.maxWeight}kg</td>
+                  <td>{fishItem.weightOptions?.join(', ') || 'N/A'}kg</td>
                   <td>
                     <span className={`status-badge ${fishItem.isAvailable ? 'available' : 'unavailable'}`}>
                       {fishItem.isAvailable ? 'Available' : 'Unavailable'}
@@ -397,29 +425,56 @@ const FishManagement = () => {
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Min Weight (kg)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formData.minWeight}
-                    onChange={(e) => setFormData({ ...formData, minWeight: e.target.value })}
-                    placeholder="1.0"
-                    min="0.1"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Max Weight (kg)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formData.maxWeight}
-                    onChange={(e) => setFormData({ ...formData, maxWeight: e.target.value })}
-                    placeholder="5.0"
-                    min="0.5"
-                  />
+              <div className="form-group">
+                <label>Weight Options (kg) *</label>
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={weightInput}
+                      onChange={(e) => setWeightInput(e.target.value)}
+                      placeholder="Enter weight (e.g., 1.5)"
+                      min="0.1"
+                      max="10"
+                      style={{ flex: 1 }}
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addWeightOption())}
+                    />
+                    <button
+                      type="button"
+                      onClick={addWeightOption}
+                      className="btn btn-outline"
+                      style={{ padding: '8px 16px' }}
+                    >
+                      Add Weight
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {formData.weightOptions.map(weight => (
+                      <div
+                        key={weight}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 12px',
+                          background: '#f0f0f0',
+                          borderRadius: '6px',
+                          fontSize: '14px'
+                        }}
+                      >
+                        <span>{weight}kg</span>
+                        <X
+                          size={16}
+                          onClick={() => removeWeightOption(weight)}
+                          style={{ cursor: 'pointer', color: '#ff6b6b' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <small style={{ color: '#666', marginTop: '5px', display: 'block' }}>
+                    Users can select from these weight options when ordering
+                  </small>
                 </div>
               </div>
 

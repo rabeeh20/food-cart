@@ -279,13 +279,9 @@ const FishingGame = () => {
   };
 
   const catchFish = (fish) => {
-    // Generate random weight
-    const minWeight = fish.minWeight || 1.0;
-    const maxWeight = fish.maxWeight || 5.0;
-    const weight = (Math.random() * (maxWeight - minWeight) + minWeight).toFixed(1);
-
+    // Don't set weight yet - let user select from available options
     setCaughtFish(fish);
-    setFishWeight(parseFloat(weight));
+    setFishWeight(null); // Weight will be selected by user
     setIsDragging(false);
 
     toast.success(`You caught a ${fish.name}!`);
@@ -367,6 +363,11 @@ const FishingGame = () => {
   };
 
   const addFishToCart = () => {
+    if (!fishWeight) {
+      toast.error('Please select a weight!');
+      return;
+    }
+
     if (!selectedPreparation) {
       toast.error('Please select a preparation style!');
       return;
@@ -551,7 +552,7 @@ const FishingGame = () => {
             <div className="caught-fish-display">
               <h2>🎉 You caught a {caughtFish.name}!</h2>
               <img src={caughtFish.image} alt={caughtFish.name} />
-              <p className="fish-weight">{fishWeight} kg</p>
+              <p className="fish-price">₹{caughtFish.pricePerKg}/kg</p>
             </div>
           )}
         </div>
@@ -572,13 +573,38 @@ const FishingGame = () => {
               <img src={caughtFish.image} alt={caughtFish.name} />
               <div>
                 <h3>{caughtFish.name}</h3>
-                <p>{fishWeight} kg @ ₹{caughtFish.pricePerKg}/kg</p>
+                <p>₹{caughtFish.pricePerKg}/kg</p>
+              </div>
+            </div>
+
+            {/* Weight Selection */}
+            <div style={{ marginBottom: '20px' }}>
+              <h3 style={{ marginBottom: '10px', fontSize: '16px' }}>Select Weight</h3>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {caughtFish.weightOptions?.map((weight) => (
+                  <button
+                    key={weight}
+                    onClick={() => setFishWeight(weight)}
+                    className={`weight-option ${fishWeight === weight ? 'selected' : ''}`}
+                    style={{
+                      padding: '10px 20px',
+                      border: fishWeight === weight ? '2px solid #ff6b6b' : '2px solid #ddd',
+                      borderRadius: '8px',
+                      background: fishWeight === weight ? '#fff5f5' : 'white',
+                      cursor: 'pointer',
+                      fontWeight: fishWeight === weight ? 'bold' : 'normal',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {weight}kg
+                  </button>
+                ))}
               </div>
             </div>
 
             <div className="preparation-grid">
               {preparationStyles.map((prep) => {
-                const basePrice = fishWeight * caughtFish.pricePerKg;
+                const basePrice = fishWeight ? fishWeight * caughtFish.pricePerKg : 0;
                 const totalPrice = basePrice + prep.price;
 
                 return (
@@ -595,7 +621,8 @@ const FishingGame = () => {
                     </div>
                     <h4>{prep.name}</h4>
                     <p className="prep-price">+₹{prep.price}</p>
-                    <div className="total-price">₹{totalPrice.toFixed(0)}</div>
+                    {fishWeight && <div className="total-price">₹{totalPrice.toFixed(0)}</div>}
+                    {!fishWeight && <div className="total-price" style={{ opacity: 0.5 }}>Select weight</div>}
                   </div>
                 );
               })}
@@ -604,10 +631,11 @@ const FishingGame = () => {
             <button
               className="add-to-cart-btn-large"
               onClick={addFishToCart}
-              disabled={!selectedPreparation}
+              disabled={!selectedPreparation || !fishWeight}
+              style={{ opacity: (!selectedPreparation || !fishWeight) ? 0.5 : 1 }}
             >
               <ShoppingCart size={20} />
-              Add to Cart
+              {!fishWeight ? 'Select Weight & Preparation' : !selectedPreparation ? 'Select Preparation' : 'Add to Cart'}
             </button>
           </div>
         </div>

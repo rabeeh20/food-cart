@@ -35,15 +35,16 @@ const fishSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  minWeight: {
-    type: Number,
-    default: 1.0,
-    min: [0.1, 'Minimum weight must be at least 0.1kg']
-  },
-  maxWeight: {
-    type: Number,
-    default: 5.0,
-    min: [0.5, 'Maximum weight must be at least 0.5kg']
+  // Available weight options (e.g., [0.5, 1, 1.5, 2])
+  weightOptions: {
+    type: [Number],
+    default: [0.5, 1, 1.5, 2, 2.5],
+    validate: {
+      validator: function(arr) {
+        return arr.length > 0 && arr.every(w => w >= 0.1 && w <= 10);
+      },
+      message: 'Weight options must have at least one value between 0.1kg and 10kg'
+    }
   },
   // Sprite animation fields for fishing game
   gameSprite: {
