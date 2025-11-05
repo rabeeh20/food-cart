@@ -37,12 +37,13 @@ export const CartProvider = ({ children }) => {
         }
 
         // Add new fish with variant
+        const calculatedPrice = (variant.weight * variant.pricePerKg) + variant.preparationPrice;
         return [...prevCart, {
           ...item,
           quantity: 1,
           variant,
-          displayName: `${item.name} (${variant.preparation}) - ${variant.weight}kg`,
-          finalPrice: (variant.weight * variant.pricePerKg) + variant.preparationPrice
+          name: `${item.name} (${variant.preparation}) - ${variant.weight}kg`,
+          price: calculatedPrice
         }];
       }
 
@@ -92,9 +93,7 @@ export const CartProvider = ({ children }) => {
 
   const getCartTotal = () => {
     return cart.reduce((total, item) => {
-      // Fish items with variants use finalPrice
-      const itemPrice = item.variant ? item.finalPrice : item.price;
-      return total + (itemPrice * item.quantity);
+      return total + (item.price * item.quantity);
     }, 0);
   };
 
