@@ -15,7 +15,7 @@ export const getAvailableFish = async (req, res) => {
     }
 
     const fish = await Fish.find({ isAvailable: true, availableStock: { $gt: 0 } })
-      .select('name species image pricePerKg minWeight maxWeight description gameSprite spriteFrames spriteWidth')
+      .select('name species image pricePerKg weightOptions description gameSprite spriteFrames spriteWidth')
       .sort({ name: 1 });
 
     res.status(200).json({
