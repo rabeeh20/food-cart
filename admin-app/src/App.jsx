@@ -26,7 +26,7 @@ function App() {
   }
 
   return (
-    <Router>
+    <Router basename="/admin">
       <SocketProvider>
         <div className="App">
           {isAuthenticated && <Navbar setIsAuthenticated={setIsAuthenticated} />}
