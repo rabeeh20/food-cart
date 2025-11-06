@@ -8,6 +8,7 @@ import {
   Image,
   RefreshControl,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
@@ -17,6 +18,9 @@ import { COLORS, SPACING, FONT_SIZES } from '../../utils/constants';
 
 const HomeScreen = ({ navigation }) => {
   const [menuItems, setMenuItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [categories, setCategories] = useState(['All']);
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [gameEnabled, setGameEnabled] = useState(false);
@@ -31,7 +35,13 @@ const HomeScreen = ({ navigation }) => {
     try {
       const menuResponse = await menuAPI.getAll();
       if (menuResponse.data.success) {
-        setMenuItems(menuResponse.data.menuItems);
+        const items = menuResponse.data.menuItems;
+        setMenuItems(items);
+        setFilteredItems(items);
+
+        // Extract unique categories
+        const uniqueCategories = ['All', ...new Set(items.map(item => item.category).filter(Boolean))];
+        setCategories(uniqueCategories);
       }
     } catch (error) {
       Toast.show({
@@ -54,6 +64,15 @@ const HomeScreen = ({ navigation }) => {
 
     setLoading(false);
     setRefreshing(false);
+  };
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+    if (category === 'All') {
+      setFilteredItems(menuItems);
+    } else {
+      setFilteredItems(menuItems.filter(item => item.category === category));
+    }
   };
 
   const onRefresh = () => {
@@ -130,8 +149,37 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
       )}
 
+      {/* Category Filter */}
+      <View style={styles.categoriesContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContent}
+        >
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category}
+              style={[
+                styles.categoryChip,
+                selectedCategory === category && styles.categoryChipActive,
+              ]}
+              onPress={() => handleCategorySelect(category)}
+            >
+              <Text
+                style={[
+                  styles.categoryChipText,
+                  selectedCategory === category && styles.categoryChipTextActive,
+                ]}
+              >
+                {String(category)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       <FlatList
-        data={menuItems}
+        data={filteredItems}
         renderItem={renderMenuItem}
         keyExtractor={(item) => item._id}
         numColumns={2}
@@ -142,7 +190,9 @@ const HomeScreen = ({ navigation }) => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="restaurant-outline" size={80} color={COLORS.lightGray} />
-            <Text style={styles.emptyText}>No menu items available</Text>
+            <Text style={styles.emptyText}>
+              {selectedCategory === 'All' ? 'No menu items available' : `No items in ${String(selectedCategory)}`}
+            </Text>
           </View>
         }
       />
@@ -217,6 +267,37 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     color: COLORS.white,
     opacity: 0.9,
+  },
+  categoriesContainer: {
+    backgroundColor: COLORS.white,
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  categoriesContent: {
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.sm,
+  },
+  categoryChip: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: 20,
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    marginRight: SPACING.sm,
+  },
+  categoryChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  categoryChipText: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  categoryChipTextActive: {
+    color: COLORS.white,
   },
   listContainer: {
     padding: SPACING.sm,
