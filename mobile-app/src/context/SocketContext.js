@@ -16,12 +16,13 @@ export const SocketProvider = ({ children }) => {
     const newSocket = io(socketURL, {
       transports: ['websocket', 'polling'],
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 2000,
+      timeout: 10000,
     });
 
     newSocket.on('connect', () => {
-      console.log('Socket connected');
+      console.log('✓ Socket connected');
       setConnected(true);
 
       // Join user room if authenticated
@@ -36,7 +37,13 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      // Suppress repeated error logs
+      setConnected(false);
+      // Only log once in development
+      if (__DEV__ && !newSocket._errorLogged) {
+        console.log('Note: Real-time features unavailable (Socket.io connection failed)');
+        newSocket._errorLogged = true;
+      }
     });
 
     setSocket(newSocket);
