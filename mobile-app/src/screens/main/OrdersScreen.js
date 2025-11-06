@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { orderAPI } from '../../utils/api';
 import { useSocket } from '../../context/SocketContext';
-import { COLORS, SPACING, FONT_SIZES } from '../../utils/constants';
+import { COLORS, SPACING, RADIUS, FONT_SIZE, FONT_WEIGHT, SHADOWS, STATUS_COLORS } from '../../constants/Colors';
 
 const OrdersScreen = () => {
   const [orders, setOrders] = useState([]);
@@ -63,64 +63,152 @@ const OrdersScreen = () => {
   };
 
   const getStatusColor = (status) => {
-    const colors = {
-      placed: COLORS.warning,
-      confirmed: COLORS.primary,
-      preparing: '#2196F3',
-      ready: '#9C27B0',
-      out_for_delivery: '#FF5722',
-      delivered: COLORS.success,
-      cancelled: COLORS.error,
+    return STATUS_COLORS[status] || COLORS.textMedium;
+  };
+
+  const getStatusBadgeStyle = (status) => {
+    const styles = {
+      placed: { bg: 'rgba(255, 107, 53, 0.1)', text: COLORS.primary },
+      confirmed: { bg: 'rgba(255, 107, 53, 0.1)', text: COLORS.primary },
+      preparing: { bg: COLORS.warningLight, text: '#856404' },
+      ready: { bg: COLORS.warningLight, text: '#856404' },
+      out_for_delivery: { bg: COLORS.warningLight, text: '#856404' },
+      delivered: { bg: COLORS.successLight, text: COLORS.success },
+      cancelled: { bg: COLORS.dangerLight, text: COLORS.danger },
     };
-    return colors[status] || COLORS.gray;
+    return styles[status] || { bg: COLORS.lightGray, text: COLORS.textMedium };
   };
 
   const getStatusText = (status) => {
     const text = {
-      placed: 'Placed',
-      confirmed: 'Confirmed',
-      preparing: 'Preparing',
-      ready: 'Ready',
-      out_for_delivery: 'Out for Delivery',
-      delivered: 'Delivered',
-      cancelled: 'Cancelled',
+      placed: 'PLACED',
+      confirmed: 'CONFIRMED',
+      preparing: 'PREPARING',
+      ready: 'READY',
+      out_for_delivery: 'OUT FOR DELIVERY',
+      delivered: 'DELIVERED',
+      cancelled: 'CANCELLED',
     };
-    return text[status] || status;
+    return text[status] || status.toUpperCase();
   };
 
-  const renderOrderItem = ({ item }) => (
-    <View style={styles.orderCard}>
-      <View style={styles.orderHeader}>
-        <View>
-          <Text style={styles.orderId}>Order #{item.orderId}</Text>
-          <Text style={styles.orderDate}>
-            {new Date(item.createdAt).toLocaleDateString()}
-          </Text>
-        </View>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.orderStatus) }]}>
-          <Text style={styles.statusText}>{getStatusText(item.orderStatus)}</Text>
-        </View>
-      </View>
+  const getStatusIcon = (status) => {
+    const icons = {
+      placed: 'checkmark-circle',
+      confirmed: 'checkmark-done-circle',
+      preparing: 'timer',
+      ready: 'checkmark-done',
+      out_for_delivery: 'bicycle',
+      delivered: 'checkmark-circle',
+      cancelled: 'close-circle',
+    };
+    return icons[status] || 'help-circle';
+  };
 
-      <View style={styles.orderItems}>
-        {item.items.slice(0, 2).map((orderItem, index) => (
-          <Text key={index} style={styles.itemText}>
-            {String(orderItem.quantity)}x {orderItem.menuItem?.name || 'Item'}
-          </Text>
-        ))}
-        {item.items.length > 2 && (
-          <Text style={styles.moreText}>+{String(item.items.length - 2)} more items</Text>
-        )}
-      </View>
+  const isActiveOrder = (status) => {
+    return ['placed', 'confirmed', 'preparing', 'ready', 'out_for_delivery'].includes(status);
+  };
 
-      <View style={styles.orderFooter}>
-        <Text style={styles.totalText}>₹{String(item.totalAmount)}</Text>
-        <Text style={styles.paymentMethod}>
-          {item.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
-        </Text>
+  const renderOrderItem = ({ item }) => {
+    const statusStyle = getStatusBadgeStyle(item.orderStatus);
+    const borderColor = getStatusColor(item.orderStatus);
+    const isActive = isActiveOrder(item.orderStatus);
+
+    return (
+      <View style={[styles.orderCard, { borderLeftColor: borderColor }]}>
+        {/* Order Header */}
+        <View style={styles.orderHeader}>
+          <View style={styles.headerLeft}>
+            <View style={styles.orderIdRow}>
+              <Text style={styles.orderId}>#{item.orderId}</Text>
+              {isActive && (
+                <View style={styles.liveIndicator}>
+                  <View style={styles.pulsingDot} />
+                  <Text style={styles.liveText}>Live</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.orderDate}>
+              {new Date(item.createdAt).toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Text>
+          </View>
+
+          <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+            <Text style={[styles.statusText, { color: statusStyle.text }]}>
+              {getStatusText(item.orderStatus)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Status Timeline */}
+        <View style={styles.statusTimeline}>
+          <View style={styles.iconCircle}>
+            <Ionicons name={getStatusIcon(item.orderStatus)} size={20} color={borderColor} />
+          </View>
+          <View style={styles.timelineContent}>
+            <Text style={styles.timelineTitle}>
+              {item.orderStatus === 'delivered' ? 'Order Delivered' :
+               item.orderStatus === 'cancelled' ? 'Order Cancelled' :
+               item.orderStatus === 'out_for_delivery' ? 'On the way' :
+               item.orderStatus === 'preparing' ? 'Being prepared' :
+               'Order confirmed'}
+            </Text>
+            <Text style={styles.timelineSubtitle}>
+              {item.orderStatus === 'delivered' ? 'Your order has been delivered successfully' :
+               item.orderStatus === 'cancelled' ? 'This order has been cancelled' :
+               item.orderStatus === 'out_for_delivery' ? 'Your order is on the way' :
+               'Your order is being prepared'}
+            </Text>
+          </View>
+        </View>
+
+        {/* Order Items */}
+        <View style={styles.orderItems}>
+          <Text style={styles.itemsTitle}>Order Items ({String(item.items.length)})</Text>
+          <View style={styles.itemsList}>
+            {item.items.slice(0, 3).map((orderItem, index) => (
+              <View key={index} style={styles.itemRow}>
+                <View style={styles.itemDot} />
+                <Text style={styles.itemText}>
+                  {String(orderItem.quantity)}x {orderItem.menuItem?.name || 'Item'}
+                </Text>
+              </View>
+            ))}
+            {item.items.length > 3 && (
+              <Text style={styles.moreText}>
+                and {String(item.items.length - 3)} more item{item.items.length - 3 > 1 ? 's' : ''}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Order Footer */}
+        <View style={styles.orderFooter}>
+          <View style={styles.footerLeft}>
+            <Text style={styles.totalLabel}>Total Amount</Text>
+            <Text style={styles.totalText}>₹{String(item.totalAmount)}</Text>
+          </View>
+
+          <View style={styles.paymentBadge}>
+            <Ionicons
+              name={item.paymentMethod === 'cod' ? 'cash' : 'card'}
+              size={14}
+              color={COLORS.textMedium}
+            />
+            <Text style={styles.paymentMethod}>
+              {item.paymentMethod === 'cod' ? 'COD' : 'Online'}
+            </Text>
+          </View>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -133,7 +221,9 @@ const OrdersScreen = () => {
   if (orders.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Ionicons name="receipt-outline" size={80} color={COLORS.lightGray} />
+        <View style={styles.emptyIconCircle}>
+          <Ionicons name="receipt-outline" size={80} color={COLORS.primary} />
+        </View>
         <Text style={styles.emptyText}>No orders yet</Text>
         <Text style={styles.emptySubtext}>Your order history will appear here</Text>
       </View>
@@ -142,9 +232,14 @@ const OrdersScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>My Orders</Text>
+        <View>
+          <Text style={styles.title}>My Orders</Text>
+          <Text style={styles.subtitle}>{String(orders.length)} order{orders.length > 1 ? 's' : ''}</Text>
+        </View>
       </View>
+
       <FlatList
         data={orders}
         renderItem={renderOrderItem}
@@ -167,105 +262,238 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: COLORS.background,
   },
+
+  // Header
   header: {
     padding: SPACING.lg,
     backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.lightGray,
+    ...SHADOWS.small,
   },
   title: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    fontSize: FONT_SIZE.title,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.dark,
   },
+  subtitle: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.textMedium,
+    marginTop: 2,
+  },
+
   listContainer: {
-    padding: SPACING.md,
+    padding: SPACING.lg,
   },
+
+  // Order Card
   orderCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
+    borderLeftWidth: 4,
+    ...SHADOWS.small,
   },
+
+  // Order Header
   orderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.lg,
+  },
+  headerLeft: {
+    flex: 1,
+    marginRight: SPACING.md,
+  },
+  orderIdRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginBottom: 4,
   },
   orderId: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.dark,
   },
-  orderDate: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
-    marginTop: 2,
-  },
-  statusBadge: {
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.successLight,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: RADIUS.xl,
+  },
+  pulsingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.success,
+  },
+  liveText: {
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.success,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  orderDate: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.textMedium,
+  },
+  statusBadge: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: RADIUS.xl,
   },
   statusText: {
-    color: COLORS.white,
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
+    letterSpacing: 0.5,
   },
-  orderItems: {
-    marginBottom: SPACING.sm,
-    paddingVertical: SPACING.sm,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: COLORS.lightGray,
+
+  // Status Timeline
+  statusTimeline: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: RADIUS.md,
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.sm,
   },
-  itemText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.text,
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.round,
+    backgroundColor: COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timelineContent: {
+    flex: 1,
+  },
+  timelineTitle: {
+    fontSize: FONT_SIZE.base,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.dark,
     marginBottom: 2,
   },
-  moreText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
-    fontStyle: 'italic',
+  timelineSubtitle: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.textMedium,
+    lineHeight: 18,
   },
+
+  // Order Items
+  orderItems: {
+    marginBottom: SPACING.lg,
+  },
+  itemsTitle: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.dark,
+    marginBottom: SPACING.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  itemsList: {
+    gap: SPACING.xs,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  itemDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.primary,
+  },
+  itemText: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.dark,
+    fontWeight: FONT_WEIGHT.medium,
+  },
+  moreText: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.textMedium,
+    fontStyle: 'italic',
+    marginLeft: 18,
+  },
+
+  // Order Footer
   orderFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingTop: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  footerLeft: {
+    flex: 1,
+  },
+  totalLabel: {
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textMedium,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   totalText: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: 'bold',
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: FONT_WEIGHT.bold,
     color: COLORS.primary,
   },
-  paymentMethod: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
+  paymentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.lightGray,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: RADIUS.sm,
   },
+  paymentMethod: {
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textMedium,
+    fontWeight: FONT_WEIGHT.semibold,
+  },
+
+  // Empty State
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: SPACING.xl,
+    padding: SPACING.xxxl,
+    backgroundColor: COLORS.background,
+  },
+  emptyIconCircle: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
   },
   emptyText: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginTop: SPACING.md,
+    fontSize: FONT_SIZE.title,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.dark,
+    marginBottom: SPACING.sm,
   },
   emptySubtext: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
-    marginTop: SPACING.xs,
+    fontSize: FONT_SIZE.base,
+    color: COLORS.textMedium,
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
 

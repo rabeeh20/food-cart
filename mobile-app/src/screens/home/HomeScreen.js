@@ -11,10 +11,11 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import { menuAPI, fishAPI } from '../../utils/api';
 import { useCart } from '../../context/CartContext';
-import { COLORS, SPACING, FONT_SIZES } from '../../utils/constants';
+import { COLORS, SPACING, RADIUS, FONT_SIZE, FONT_WEIGHT, SHADOWS } from '../../constants/Colors';
 
 const HomeScreen = ({ navigation }) => {
   const [menuItems, setMenuItems] = useState([]);
@@ -24,7 +25,7 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [gameEnabled, setGameEnabled] = useState(false);
-  const { getCartCount } = useCart();
+  const { cart, addToCart, getCartCount } = useCart();
 
   useEffect(() => {
     fetchData();
@@ -80,32 +81,91 @@ const HomeScreen = ({ navigation }) => {
     fetchData();
   };
 
-  const renderMenuItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.menuCard}
-      onPress={() => navigation.navigate('MenuItemDetail', { item })}
-    >
-      <Image source={{ uri: item.image }} style={styles.itemImage} />
-      <View style={styles.itemInfo}>
-        <Text style={styles.itemName} numberOfLines={1}>
-          {String(item.name || 'Unnamed')}
-        </Text>
-        <Text style={styles.itemCategory}>{String(item.category || 'Uncategorized')}</Text>
-        <View style={styles.itemFooter}>
-          <Text style={styles.itemPrice}>₹{String(item.price || 0)}</Text>
-          {item.stock > 0 ? (
-            <View style={styles.stockBadge}>
-              <Text style={styles.stockText}>In Stock</Text>
-            </View>
-          ) : (
-            <View style={[styles.stockBadge, styles.outOfStock]}>
-              <Text style={[styles.stockText, styles.outOfStockText]}>Out of Stock</Text>
-            </View>
-          )}
+  const handleAddToCart = (item) => {
+    if (item.stock > 0) {
+      addToCart(item);
+      Toast.show({
+        type: 'success',
+        text1: 'Added to cart',
+        text2: `${item.name} added to cart`,
+        visibilityTime: 2000,
+      });
+    }
+  };
+
+  const renderMenuItem = ({ item }) => {
+    const isVeg = item.isVeg !== false; // Default to veg if not specified
+
+    return (
+      <TouchableOpacity
+        style={styles.menuCard}
+        onPress={() => navigation.navigate('MenuItemDetail', { item })}
+        activeOpacity={0.9}
+      >
+        {/* Image Container */}
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: item.image }} style={styles.itemImage} />
+
+          {/* Veg/Non-Veg Badge */}
+          <View style={styles.vegBadge}>
+            <Text style={styles.vegBadgeText}>{isVeg ? '🟢' : '🔴'}</Text>
+          </View>
+
+          {/* Discount Badge */}
+          {item.discount && item.discount > 0 ? (
+            <LinearGradient
+              colors={[COLORS.danger, '#C82333']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.discountBadge}
+            >
+              <Text style={styles.discountText}>{String(item.discount)}% OFF</Text>
+            </LinearGradient>
+          ) : null}
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+
+        {/* Content */}
+        <View style={styles.itemContent}>
+          <Text style={styles.itemName} numberOfLines={1}>
+            {String(item.name || 'Unnamed')}
+          </Text>
+
+          {item.description ? (
+            <Text style={styles.itemDescription} numberOfLines={2}>
+              {String(item.description)}
+            </Text>
+          ) : null}
+
+          {item.category ? (
+            <View style={styles.categoryTag}>
+              <Text style={styles.categoryTagText}>{String(item.category)}</Text>
+            </View>
+          ) : null}
+
+          {/* Price and Add Button Row */}
+          <View style={styles.itemFooter}>
+            <Text style={styles.itemPrice}>₹{String(item.price || 0)}</Text>
+
+            {item.stock > 0 ? (
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart(item);
+                }}
+              >
+                <Ionicons name="add" size={24} color={COLORS.white} />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.outOfStockBadge}>
+                <Text style={styles.outOfStockText}>Out</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (
@@ -117,89 +177,118 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.deliverToLabel}>Deliver to</Text>
-          <TouchableOpacity style={styles.locationButton}>
-            <Ionicons name="location" size={18} color={COLORS.primary} />
-            <Text style={styles.locationText}>Current Location</Text>
-            <Ionicons name="chevron-down" size={16} color={COLORS.text} />
+      {/* Header with Gradient */}
+      <LinearGradient
+        colors={[COLORS.gradientStart, COLORS.gradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.brandName}>FoodCart</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.cartButton}
+            onPress={() => navigation.navigate('Cart')}
+          >
+            <Ionicons name="cart-outline" size={28} color={COLORS.white} />
+            {getCartCount() > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{String(getCartCount())}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.cartButton}
-          onPress={() => navigation.navigate('Cart')}
-        >
-          <Ionicons name="cart-outline" size={28} color={COLORS.text} />
-          {getCartCount() > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>{String(getCartCount())}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+      </LinearGradient>
 
-      {gameEnabled && (
-        <TouchableOpacity
-          style={styles.fishingGameBanner}
-          onPress={() => navigation.navigate('FishingGame')}
-        >
-          <Ionicons name="fish" size={32} color={COLORS.white} />
-          <View style={styles.bannerText}>
-            <Text style={styles.bannerTitle}>Fishing Game</Text>
-            <Text style={styles.bannerSubtitle}>Catch fresh fish and order!</Text>
-          </View>
-          <Ionicons name="arrow-forward" size={24} color={COLORS.white} />
-        </TouchableOpacity>
-      )}
-
-      {/* Category Filter */}
-      <View style={styles.categoriesContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesContent}
-        >
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryChip,
-                selectedCategory === category && styles.categoryChipActive,
-              ]}
-              onPress={() => handleCategorySelect(category)}
-            >
-              <Text
-                style={[
-                  styles.categoryChipText,
-                  selectedCategory === category && styles.categoryChipTextActive,
-                ]}
-              >
-                {String(category)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      <FlatList
-        data={filteredItems}
-        renderItem={renderMenuItem}
-        keyExtractor={(item) => item._id}
-        numColumns={2}
-        contentContainerStyle={styles.listContainer}
+      <ScrollView
+        style={styles.scrollView}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
         }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="restaurant-outline" size={80} color={COLORS.lightGray} />
-            <Text style={styles.emptyText}>
-              {selectedCategory === 'All' ? 'No menu items available' : `No items in ${String(selectedCategory)}`}
-            </Text>
-          </View>
-        }
-      />
+      >
+        {/* Promotional Banner */}
+        {gameEnabled && (
+          <TouchableOpacity
+            style={styles.bannerContainer}
+            onPress={() => navigation.navigate('FishingGame')}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={[COLORS.gradientStart, COLORS.gradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.promoBanner}
+            >
+              <View style={styles.bannerContent}>
+                <Text style={styles.bannerTitle}>Catch Fresh Fish Daily!</Text>
+                <Text style={styles.bannerDescription}>
+                  Try your luck and catch the freshest fish of the day. Choose your preparation style and enjoy the best seafood delivered to your door!
+                </Text>
+              </View>
+              <View style={styles.bannerIcon}>
+                <Text style={styles.fishEmoji}>🎣</Text>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+
+        {/* Category Filter */}
+        <View style={styles.categoriesSection}>
+          <Text style={styles.sectionTitle}>Category</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesContent}
+          >
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category}
+                style={[
+                  styles.categoryCard,
+                  selectedCategory === category && styles.categoryCardActive,
+                ]}
+                onPress={() => handleCategorySelect(category)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.categoryIcon}>
+                  {category === 'All' ? '🍽️' : category === 'Starters' ? '🥗' : category === 'Main Course' ? '🍛' : category === 'Desserts' ? '🍰' : category === 'Beverages' ? '🥤' : '🍴'}
+                </Text>
+                <Text
+                  style={[
+                    styles.categoryName,
+                    selectedCategory === category && styles.categoryNameActive,
+                  ]}
+                >
+                  {String(category)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Menu Items Grid */}
+        <View style={styles.menuSection}>
+          {filteredItems.length > 0 ? (
+            <View style={styles.menuGrid}>
+              {filteredItems.map((item) => (
+                <View key={item._id} style={styles.menuItemWrapper}>
+                  {renderMenuItem({ item })}
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="restaurant-outline" size={80} color={COLORS.border} />
+              <Text style={styles.emptyText}>
+                {selectedCategory === 'All' ? 'No menu items available' : `No items in ${String(selectedCategory)}`}
+              </Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -213,182 +302,272 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: COLORS.background,
   },
+
+  // Header Styles
   header: {
+    paddingTop: 50,
+    paddingBottom: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
+    ...SHADOWS.medium,
+  },
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.sm,
-    backgroundColor: COLORS.white,
   },
   headerLeft: {
     flex: 1,
   },
-  deliverToLabel: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textLight,
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  locationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  locationText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginLeft: 2,
-    marginRight: 2,
+  brandName: {
+    fontSize: 26,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.white,
+    letterSpacing: -0.5,
   },
   cartButton: {
     position: 'relative',
-    padding: 8,
+    padding: SPACING.xs,
   },
   cartBadge: {
     position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: COLORS.primary,
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    top: 0,
+    right: 0,
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.round,
+    minWidth: 22,
+    height: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    ...SHADOWS.small,
   },
   cartBadgeText: {
-    color: COLORS.white,
-    fontSize: FONT_SIZES.xs,
-    fontWeight: 'bold',
+    color: COLORS.primary,
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
   },
-  fishingGameBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    margin: SPACING.md,
-    padding: SPACING.md,
-    borderRadius: 12,
-  },
-  bannerText: {
+
+  scrollView: {
     flex: 1,
-    marginLeft: SPACING.md,
+  },
+
+  // Promotional Banner
+  bannerContainer: {
+    margin: SPACING.lg,
+    borderRadius: RADIUS.lg,
+    overflow: 'hidden',
+    ...SHADOWS.medium,
+  },
+  promoBanner: {
+    flexDirection: 'row',
+    padding: SPACING.xxxl,
+    borderRadius: RADIUS.lg,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  bannerContent: {
+    flex: 1,
+    zIndex: 2,
   },
   bannerTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: 'bold',
+    fontSize: FONT_SIZE.hero,
+    fontWeight: FONT_WEIGHT.bold,
     color: COLORS.white,
+    marginBottom: SPACING.sm,
   },
-  bannerSubtitle: {
-    fontSize: FONT_SIZES.sm,
+  bannerDescription: {
+    fontSize: FONT_SIZE.md,
     color: COLORS.white,
-    opacity: 0.9,
+    opacity: 0.95,
+    lineHeight: 22,
   },
-  categoriesContainer: {
-    backgroundColor: COLORS.white,
-    paddingVertical: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+  bannerIcon: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: SPACING.lg,
+  },
+  fishEmoji: {
+    fontSize: 64,
+  },
+
+  // Categories Section
+  categoriesSection: {
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.lg,
+  },
+  sectionTitle: {
+    fontSize: FONT_SIZE.title,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.dark,
+    marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
   },
   categoriesContent: {
-    paddingHorizontal: SPACING.md,
-    gap: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.md,
   },
-  categoryChip: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: 20,
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-    marginRight: SPACING.sm,
-  },
-  categoryChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  categoryChipText: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  categoryChipTextActive: {
-    color: COLORS.white,
-  },
-  listContainer: {
-    padding: SPACING.sm,
-  },
-  menuCard: {
-    flex: 1,
+  categoryCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    margin: SPACING.sm,
+    borderRadius: RADIUS.md,
+    padding: SPACING.lg,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    minWidth: 100,
+    alignItems: 'center',
+    gap: SPACING.sm,
+    ...SHADOWS.small,
+  },
+  categoryCardActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: 'rgba(255, 107, 53, 0.05)',
+  },
+  categoryIcon: {
+    fontSize: 40,
+  },
+  categoryName: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: COLORS.text,
+    textAlign: 'center',
+  },
+  categoryNameActive: {
+    color: COLORS.primary,
+  },
+
+  // Menu Section
+  menuSection: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xxxl,
+  },
+  menuGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -SPACING.xs,
+  },
+  menuItemWrapper: {
+    width: '50%',
+    padding: SPACING.xs,
+  },
+
+  // Menu Card
+  menuCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.md,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...SHADOWS.small,
+  },
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 140,
   },
   itemImage: {
     width: '100%',
-    height: 120,
+    height: '100%',
     backgroundColor: COLORS.lightGray,
   },
-  itemInfo: {
-    padding: SPACING.sm,
+  vegBadge: {
+    position: 'absolute',
+    bottom: SPACING.sm,
+    left: SPACING.sm,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: RADIUS.xl,
+    ...SHADOWS.small,
+  },
+  vegBadgeText: {
+    fontSize: 14,
+  },
+  discountBadge: {
+    position: 'absolute',
+    top: SPACING.sm,
+    left: SPACING.sm,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 6,
+    borderRadius: RADIUS.sm,
+  },
+  discountText: {
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.white,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // Item Content
+  itemContent: {
+    padding: SPACING.md,
   },
   itemName: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 2,
+    fontSize: FONT_SIZE.base,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.dark,
+    marginBottom: 4,
   },
-  itemCategory: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textLight,
+  itemDescription: {
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textMedium,
     marginBottom: SPACING.sm,
+    lineHeight: 16,
+  },
+  categoryTag: {
+    alignSelf: 'flex-start',
+    backgroundColor: COLORS.lightGray,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: RADIUS.sm,
+    marginBottom: SPACING.sm,
+  },
+  categoryTagText: {
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textMedium,
+    fontWeight: FONT_WEIGHT.medium,
   },
   itemFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 4,
   },
   itemPrice: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: 'bold',
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.bold,
     color: COLORS.primary,
   },
-  stockBadge: {
-    backgroundColor: COLORS.success,
-    paddingHorizontal: SPACING.xs,
-    paddingVertical: 2,
-    borderRadius: 4,
+  addButton: {
+    backgroundColor: COLORS.primary,
+    width: 44,
+    height: 44,
+    borderRadius: RADIUS.round,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...SHADOWS.button,
   },
-  stockText: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.white,
-    fontWeight: '500',
-  },
-  outOfStock: {
+  outOfStockBadge: {
     backgroundColor: COLORS.lightGray,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 6,
+    borderRadius: RADIUS.sm,
   },
   outOfStockText: {
+    fontSize: FONT_SIZE.xs,
     color: COLORS.textLight,
+    fontWeight: FONT_WEIGHT.semibold,
   },
+
+  // Empty State
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 60,
+    paddingVertical: 60,
   },
   emptyText: {
-    fontSize: FONT_SIZES.md,
+    fontSize: FONT_SIZE.base,
     color: COLORS.textLight,
-    marginTop: SPACING.md,
+    marginTop: SPACING.lg,
   },
 });
 
