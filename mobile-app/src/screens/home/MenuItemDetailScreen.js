@@ -76,7 +76,7 @@ const MenuItemDetailScreen = ({ route, navigation }) => {
           {item.description && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.description}>{item.description}</Text>
+              <Text style={styles.description}>{String(item.description)}</Text>
             </View>
           )}
 
@@ -127,7 +127,7 @@ const MenuItemDetailScreen = ({ route, navigation }) => {
           disabled={item.stock <= 0}
         >
           <Text style={styles.addButtonText}>
-            {item.stock > 0 ? `Add to Cart - ₹${item.price * quantity}` : 'Out of Stock'}
+            {item.stock > 0 ? `Add to Cart - ₹${String(item.price * quantity)}` : 'Out of Stock'}
           </Text>
         </TouchableOpacity>
       </View>

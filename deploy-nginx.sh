@@ -84,7 +84,15 @@ server {
         add_header 'Access-Control-Allow-Credentials' 'true' always;
     }
 
-    # Admin app - Simplified without nested locations
+    # Admin app static assets with caching - Must come BEFORE /admin location
+    location ~ ^/admin/assets/ {
+        root /var/www/food-delivery/admin-app/dist;
+        rewrite ^/admin/(.*)$ /$1 break;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Admin app - Must come AFTER assets location
     location /admin {
         alias /var/www/food-delivery/admin-app/dist;
         index index.html;
@@ -92,13 +100,6 @@ server {
 
         # Cache control for HTML files only
         add_header Cache-Control "no-cache" always;
-    }
-
-    # Admin app static assets with caching
-    location ~ ^/admin/assets/ {
-        alias /var/www/food-delivery/admin-app/dist/assets/;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
     }
 
     # User app static assets with caching
