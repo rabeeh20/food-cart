@@ -120,157 +120,283 @@ const CheckoutScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Delivery Address</Text>
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Checkout</Text>
+          <Text style={styles.headerSubtitle}>Review your order details</Text>
+        </View>
 
-        {fetchingAddresses ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Loading addresses...</Text>
+        {/* Delivery Address Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="location" size={20} color={COLORS.primary} />
+            </View>
+            <Text style={styles.sectionTitle}>Delivery Address</Text>
           </View>
-        ) : selectedAddress ? (
-          <>
-            <View style={styles.addressCard}>
-              <Ionicons name="location" size={24} color={COLORS.primary} />
-              <View style={styles.addressInfo}>
+
+          {fetchingAddresses ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={COLORS.primary} />
+              <Text style={styles.loadingText}>Loading addresses...</Text>
+            </View>
+          ) : selectedAddress ? (
+            <>
+              <View style={styles.addressCard}>
+                <View style={styles.addressHeader}>
+                  <Text style={styles.addressLabel}>Deliver to</Text>
+                  {selectedAddress.isDefault ? (
+                    <View style={styles.defaultBadge}>
+                      <Ionicons name="star" size={10} color={COLORS.white} />
+                      <Text style={styles.defaultBadgeText}>Default</Text>
+                    </View>
+                  ) : null}
+                </View>
                 <Text style={styles.addressText}>{String(selectedAddress.street || '')}</Text>
                 <Text style={styles.addressSubtext}>
                   {String(selectedAddress.city || '')}, {String(selectedAddress.state || '')} - {String(selectedAddress.zipCode || '')}
                 </Text>
                 {selectedAddress.phone ? (
-                  <Text style={styles.addressSubtext}>Phone: {String(selectedAddress.phone)}</Text>
+                  <View style={styles.phoneRow}>
+                    <Ionicons name="call-outline" size={14} color={COLORS.textLight} />
+                    <Text style={styles.phoneText}>{String(selectedAddress.phone)}</Text>
+                  </View>
                 ) : null}
               </View>
-              {selectedAddress.isDefault ? (
-                <View style={styles.defaultBadge}>
-                  <Text style={styles.defaultBadgeText}>Default</Text>
-                </View>
-              ) : null}
+              <TouchableOpacity
+                style={styles.changeButton}
+                onPress={() => Toast.show({
+                  type: 'info',
+                  text1: 'Coming Soon',
+                  text2: 'Address management feature coming soon!',
+                })}
+              >
+                <Ionicons name="create-outline" size={16} color={COLORS.primary} />
+                <Text style={styles.changeButtonText}>Change Address</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={styles.noAddressCard}>
+              <View style={styles.emptyIconCircle}>
+                <Ionicons name="location-outline" size={40} color={COLORS.primary} />
+              </View>
+              <Text style={styles.noAddressTitle}>No Address Found</Text>
+              <Text style={styles.noAddressText}>Add a delivery address to continue</Text>
+              <TouchableOpacity
+                style={styles.addAddressButton}
+                onPress={() => Toast.show({
+                  type: 'info',
+                  text1: 'Coming Soon',
+                  text2: 'Address management feature coming soon!',
+                })}
+              >
+                <Ionicons name="add-circle-outline" size={20} color={COLORS.white} />
+                <Text style={styles.addAddressButtonText}>Add New Address</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={styles.changeButton}
-              onPress={() => Toast.show({
-                type: 'info',
-                text1: 'Coming Soon',
-                text2: 'Address management feature coming soon!',
-              })}
-            >
-              <Text style={styles.changeButtonText}>Change Address</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <View style={styles.noAddressCard}>
-            <Ionicons name="location-outline" size={32} color={COLORS.textLight} />
-            <Text style={styles.noAddressText}>No delivery address found</Text>
-            <TouchableOpacity
-              style={styles.addAddressButton}
-              onPress={() => Toast.show({
-                type: 'info',
-                text1: 'Coming Soon',
-                text2: 'Address management feature coming soon!',
-              })}
-            >
-              <Text style={styles.addAddressButtonText}>Add Address</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Payment Method</Text>
-        <TouchableOpacity
-          style={[
-            styles.paymentOption,
-            paymentMethod === PAYMENT_METHODS.COD && styles.selectedPayment,
-          ]}
-          onPress={() => setPaymentMethod(PAYMENT_METHODS.COD)}
-        >
-          <Ionicons
-            name="cash-outline"
-            size={24}
-            color={paymentMethod === PAYMENT_METHODS.COD ? COLORS.primary : COLORS.gray}
-          />
-          <Text style={styles.paymentText}>Cash on Delivery</Text>
-          {paymentMethod === PAYMENT_METHODS.COD && (
-            <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
           )}
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          style={[
-            styles.paymentOption,
-            paymentMethod === PAYMENT_METHODS.RAZORPAY && styles.selectedPayment,
-          ]}
-          onPress={() => setPaymentMethod(PAYMENT_METHODS.RAZORPAY)}
-        >
-          <Ionicons
-            name="card-outline"
-            size={24}
-            color={paymentMethod === PAYMENT_METHODS.RAZORPAY ? COLORS.primary : COLORS.gray}
-          />
-          <Text style={styles.paymentText}>Online Payment</Text>
-          {paymentMethod === PAYMENT_METHODS.RAZORPAY && (
-            <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
-          )}
-        </TouchableOpacity>
-      </View>
+        {/* Payment Method Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="wallet" size={20} color={COLORS.primary} />
+            </View>
+            <Text style={styles.sectionTitle}>Payment Method</Text>
+          </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Order Summary</Text>
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Items ({String(cart.length)})</Text>
-            <Text style={styles.summaryValue}>₹{String(getCartTotal())}</Text>
+          <TouchableOpacity
+            style={[
+              styles.paymentOption,
+              paymentMethod === PAYMENT_METHODS.COD && styles.selectedPayment,
+            ]}
+            onPress={() => setPaymentMethod(PAYMENT_METHODS.COD)}
+          >
+            <View style={styles.paymentLeft}>
+              <View style={[
+                styles.paymentIconCircle,
+                paymentMethod === PAYMENT_METHODS.COD && styles.selectedPaymentIcon
+              ]}>
+                <Ionicons
+                  name="cash"
+                  size={20}
+                  color={paymentMethod === PAYMENT_METHODS.COD ? COLORS.white : COLORS.gray}
+                />
+              </View>
+              <View>
+                <Text style={styles.paymentTitle}>Cash on Delivery</Text>
+                <Text style={styles.paymentSubtitle}>Pay when you receive</Text>
+              </View>
+            </View>
+            {paymentMethod === PAYMENT_METHODS.COD && (
+              <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.paymentOption,
+              paymentMethod === PAYMENT_METHODS.RAZORPAY && styles.selectedPayment,
+            ]}
+            onPress={() => setPaymentMethod(PAYMENT_METHODS.RAZORPAY)}
+          >
+            <View style={styles.paymentLeft}>
+              <View style={[
+                styles.paymentIconCircle,
+                paymentMethod === PAYMENT_METHODS.RAZORPAY && styles.selectedPaymentIcon
+              ]}>
+                <Ionicons
+                  name="card"
+                  size={20}
+                  color={paymentMethod === PAYMENT_METHODS.RAZORPAY ? COLORS.white : COLORS.gray}
+                />
+              </View>
+              <View>
+                <Text style={styles.paymentTitle}>Online Payment</Text>
+                <Text style={styles.paymentSubtitle}>UPI, Card, Wallet</Text>
+              </View>
+            </View>
+            {paymentMethod === PAYMENT_METHODS.RAZORPAY && (
+              <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Order Summary Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="receipt" size={20} color={COLORS.primary} />
+            </View>
+            <Text style={styles.sectionTitle}>Order Summary</Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Delivery Fee</Text>
-            <Text style={styles.summaryValue}>₹40</Text>
-          </View>
-          <View style={[styles.summaryRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>₹{String(getCartTotal() + 40)}</Text>
+
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Items ({String(cart.length)})</Text>
+              <Text style={styles.summaryValue}>₹{String(getCartTotal())}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Delivery Fee</Text>
+              <Text style={styles.summaryValue}>₹40</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total Amount</Text>
+              <Text style={styles.totalValue}>₹{String(getCartTotal() + 40)}</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      <TouchableOpacity
-        style={[styles.placeOrderButton, loading && styles.disabledButton]}
-        onPress={handlePlaceOrder}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color={COLORS.white} />
-        ) : (
-          <Text style={styles.placeOrderText}>Place Order</Text>
-        )}
-      </TouchableOpacity>
-    </ScrollView>
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+
+      {/* Fixed Bottom Button */}
+      <View style={styles.bottomContainer}>
+        <View style={styles.bottomSummary}>
+          <View>
+            <Text style={styles.bottomLabel}>Total Amount</Text>
+            <Text style={styles.bottomValue}>₹{String(getCartTotal() + 40)}</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.placeOrderButton, loading && styles.disabledButton]}
+            onPress={handlePlaceOrder}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={COLORS.white} size="small" />
+            ) : (
+              <>
+                <Text style={styles.placeOrderText}>Place Order</Text>
+                <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#f8f9fa',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  header: {
+    backgroundColor: COLORS.white,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  headerTitle: {
+    fontSize: FONT_SIZES.xxl,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textLight,
   },
   section: {
     backgroundColor: COLORS.white,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.md,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 99, 71, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.sm,
   },
   sectionTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
+    padding: SPACING.lg,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
   },
   loadingText: {
     marginLeft: SPACING.sm,
@@ -278,101 +404,171 @@ const styles = StyleSheet.create({
     color: COLORS.textLight,
   },
   addressCard: {
-    flexDirection: 'row',
     padding: SPACING.md,
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
-    marginBottom: SPACING.sm,
-    alignItems: 'flex-start',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
   },
-  addressInfo: {
-    flex: 1,
-    marginLeft: SPACING.sm,
+  addressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+  },
+  addressLabel: {
+    fontSize: FONT_SIZES.xs,
+    fontWeight: '600',
+    color: COLORS.textLight,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   addressText: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '500',
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
     color: COLORS.text,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   addressSubtext: {
-    fontSize: FONT_SIZES.xs,
+    fontSize: FONT_SIZES.sm,
     color: COLORS.textLight,
-    marginTop: 2,
+    lineHeight: 20,
+  },
+  phoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.xs,
+  },
+  phoneText: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textLight,
+    marginLeft: 6,
   },
   defaultBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: COLORS.primary,
     paddingHorizontal: SPACING.xs,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginLeft: SPACING.xs,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
   },
   defaultBadgeText: {
-    fontSize: FONT_SIZES.xs,
+    fontSize: 10,
     color: COLORS.white,
-    fontWeight: '500',
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 99, 71, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
   },
   noAddressCard: {
-    padding: SPACING.lg,
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
+    padding: SPACING.xl,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
     alignItems: 'center',
+  },
+  noAddressTitle: {
+    fontSize: FONT_SIZES.lg,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
   },
   noAddressText: {
     fontSize: FONT_SIZES.sm,
     color: COLORS.textLight,
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
+    textAlign: 'center',
   },
   addAddressButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: COLORS.primary,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
-    borderRadius: 8,
+    borderRadius: 24,
+    gap: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   addAddressButtonText: {
     fontSize: FONT_SIZES.sm,
     color: COLORS.white,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   changeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
+    marginTop: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    gap: 6,
   },
   changeButtonText: {
     fontSize: FONT_SIZES.sm,
     color: COLORS.primary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   paymentOption: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     padding: SPACING.md,
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
     marginBottom: SPACING.sm,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: '#e9ecef',
   },
   selectedPayment: {
     borderColor: COLORS.primary,
     backgroundColor: 'rgba(255, 99, 71, 0.05)',
   },
-  paymentText: {
+  paymentLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
-    marginLeft: SPACING.sm,
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '500',
+  },
+  paymentIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#e9ecef',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.sm,
+  },
+  selectedPaymentIcon: {
+    backgroundColor: COLORS.primary,
+  },
+  paymentTitle: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
     color: COLORS.text,
+    marginBottom: 2,
+  },
+  paymentSubtitle: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textLight,
   },
   summaryCard: {
     padding: SPACING.md,
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.sm,
   },
   summaryLabel: {
     fontSize: FONT_SIZES.sm,
@@ -381,30 +577,75 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: FONT_SIZES.sm,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#dee2e6',
+    marginVertical: SPACING.sm,
   },
   totalRow: {
-    marginTop: SPACING.sm,
-    paddingTop: SPACING.sm,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.lightGray,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   totalLabel: {
     fontSize: FONT_SIZES.md,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: COLORS.text,
   },
   totalValue: {
-    fontSize: FONT_SIZES.lg,
+    fontSize: FONT_SIZES.xl,
     fontWeight: 'bold',
     color: COLORS.primary,
   },
-  placeOrderButton: {
-    backgroundColor: COLORS.primary,
-    margin: SPACING.md,
-    padding: SPACING.md,
-    borderRadius: 12,
+  bottomSpacing: {
+    height: 100,
+  },
+  bottomContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  bottomSummary: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  bottomLabel: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textLight,
+    marginBottom: 4,
+  },
+  bottomValue: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+  placeOrderButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderRadius: 24,
+    gap: 8,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   disabledButton: {
     opacity: 0.6,
@@ -412,7 +653,7 @@ const styles = StyleSheet.create({
   placeOrderText: {
     color: COLORS.white,
     fontSize: FONT_SIZES.md,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
 
