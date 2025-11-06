@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { orderAPI } from '../../utils/api';
+import { orderAPI, addressAPI } from '../../utils/api';
 import { COLORS, SPACING, FONT_SIZES, PAYMENT_METHODS } from '../../utils/constants';
 
 const CheckoutScreen = ({ navigation }) => {
@@ -20,6 +20,32 @@ const CheckoutScreen = ({ navigation }) => {
   const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.COD);
   const [loading, setLoading] = useState(false);
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [fetchingAddresses, setFetchingAddresses] = useState(true);
+
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
+
+  const fetchAddresses = async () => {
+    try {
+      const response = await addressAPI.getAll();
+      if (response.data.success) {
+        const fetchedAddresses = response.data.addresses;
+        setAddresses(fetchedAddresses);
+
+        // Auto-select default address or first address
+        const defaultAddr = fetchedAddresses.find(addr => addr.isDefault);
+        setSelectedAddress(defaultAddr || fetchedAddresses[0] || null);
+      }
+    } catch (error) {
+      console.log('Failed to fetch addresses:', error);
+      // Silent fail - user can still use default address
+    } finally {
+      setFetchingAddresses(false);
+    }
+  };
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0) {
@@ -31,14 +57,14 @@ const CheckoutScreen = ({ navigation }) => {
       return;
     }
 
-    // For demo, using a default address
-    const defaultAddress = {
-      street: '123 Main St',
-      city: 'Demo City',
-      state: 'Demo State',
-      zipCode: '12345',
-      phone: '1234567890',
-    };
+    if (!selectedAddress) {
+      Toast.show({
+        type: 'error',
+        text1: 'No Address',
+        text2: 'Please add a delivery address',
+      });
+      return;
+    }
 
     setLoading(true);
 
@@ -52,7 +78,13 @@ const CheckoutScreen = ({ navigation }) => {
             isFish: true,
           }),
         })),
-        deliveryAddress: defaultAddress,
+        deliveryAddress: {
+          street: selectedAddress.street,
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          zipCode: selectedAddress.zipCode,
+          phone: selectedAddress.phone,
+        },
         paymentMethod,
       };
 
@@ -91,16 +123,58 @@ const CheckoutScreen = ({ navigation }) => {
     <ScrollView style={styles.container}>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Delivery Address</Text>
-        <View style={styles.addressCard}>
-          <Ionicons name="location" size={24} color={COLORS.primary} />
-          <View style={styles.addressInfo}>
-            <Text style={styles.addressText}>123 Main St</Text>
-            <Text style={styles.addressSubtext}>Demo City, Demo State - 12345</Text>
+
+        {fetchingAddresses ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Loading addresses...</Text>
           </View>
-        </View>
-        <TouchableOpacity style={styles.changeButton}>
-          <Text style={styles.changeButtonText}>Change Address</Text>
-        </TouchableOpacity>
+        ) : selectedAddress ? (
+          <>
+            <View style={styles.addressCard}>
+              <Ionicons name="location" size={24} color={COLORS.primary} />
+              <View style={styles.addressInfo}>
+                <Text style={styles.addressText}>{String(selectedAddress.street || '')}</Text>
+                <Text style={styles.addressSubtext}>
+                  {String(selectedAddress.city || '')}, {String(selectedAddress.state || '')} - {String(selectedAddress.zipCode || '')}
+                </Text>
+                {selectedAddress.phone ? (
+                  <Text style={styles.addressSubtext}>Phone: {String(selectedAddress.phone)}</Text>
+                ) : null}
+              </View>
+              {selectedAddress.isDefault ? (
+                <View style={styles.defaultBadge}>
+                  <Text style={styles.defaultBadgeText}>Default</Text>
+                </View>
+              ) : null}
+            </View>
+            <TouchableOpacity
+              style={styles.changeButton}
+              onPress={() => Toast.show({
+                type: 'info',
+                text1: 'Coming Soon',
+                text2: 'Address management feature coming soon!',
+              })}
+            >
+              <Text style={styles.changeButtonText}>Change Address</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={styles.noAddressCard}>
+            <Ionicons name="location-outline" size={32} color={COLORS.textLight} />
+            <Text style={styles.noAddressText}>No delivery address found</Text>
+            <TouchableOpacity
+              style={styles.addAddressButton}
+              onPress={() => Toast.show({
+                type: 'info',
+                text1: 'Coming Soon',
+                text2: 'Address management feature coming soon!',
+              })}
+            >
+              <Text style={styles.addAddressButtonText}>Add Address</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <View style={styles.section}>
@@ -191,12 +265,25 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: SPACING.sm,
   },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.md,
+    backgroundColor: COLORS.background,
+    borderRadius: 8,
+  },
+  loadingText: {
+    marginLeft: SPACING.sm,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textLight,
+  },
   addressCard: {
     flexDirection: 'row',
     padding: SPACING.md,
     backgroundColor: COLORS.background,
     borderRadius: 8,
     marginBottom: SPACING.sm,
+    alignItems: 'flex-start',
   },
   addressInfo: {
     flex: 1,
@@ -211,6 +298,42 @@ const styles = StyleSheet.create({
   addressSubtext: {
     fontSize: FONT_SIZES.xs,
     color: COLORS.textLight,
+    marginTop: 2,
+  },
+  defaultBadge: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: SPACING.xs,
+  },
+  defaultBadgeText: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.white,
+    fontWeight: '500',
+  },
+  noAddressCard: {
+    padding: SPACING.lg,
+    backgroundColor: COLORS.background,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  noAddressText: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textLight,
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  addAddressButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: 8,
+  },
+  addAddressButtonText: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.white,
+    fontWeight: '600',
   },
   changeButton: {
     alignSelf: 'flex-start',

@@ -27,18 +27,11 @@ const HomeScreen = ({ navigation }) => {
   }, []);
 
   const fetchData = async () => {
+    // Fetch menu items - show error if this fails
     try {
-      const [menuResponse, fishResponse] = await Promise.all([
-        menuAPI.getAll(),
-        fishAPI.getGameSettings(),
-      ]);
-
+      const menuResponse = await menuAPI.getAll();
       if (menuResponse.data.success) {
         setMenuItems(menuResponse.data.menuItems);
-      }
-
-      if (fishResponse.data.success) {
-        setGameEnabled(fishResponse.data.gameSettings.fishingGameEnabled);
       }
     } catch (error) {
       Toast.show({
@@ -46,10 +39,21 @@ const HomeScreen = ({ navigation }) => {
         text1: 'Error',
         text2: 'Failed to fetch menu',
       });
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
     }
+
+    // Fetch fish game settings - silent fail (optional feature)
+    try {
+      const fishResponse = await fishAPI.getGameSettings();
+      if (fishResponse.data.success) {
+        setGameEnabled(fishResponse.data.gameSettings.fishingGameEnabled);
+      }
+    } catch (error) {
+      // Silent fail - fishing game is optional
+      console.log('Fish game settings unavailable');
+    }
+
+    setLoading(false);
+    setRefreshing(false);
   };
 
   const onRefresh = () => {
