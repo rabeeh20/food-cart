@@ -26,7 +26,7 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
 
 const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
+    origin: process.env.NODE_ENV === 'production' ? allowedOrigins : '*',
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -37,7 +37,7 @@ app.set('io', io);
 
 // Middleware
 app.use(cors({
-  origin: allowedOrigins,
+  origin: process.env.NODE_ENV === 'production' ? allowedOrigins : '*',
   credentials: true
 }));
 app.use(express.json());
