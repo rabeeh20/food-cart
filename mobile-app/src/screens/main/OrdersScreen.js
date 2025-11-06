@@ -105,16 +105,16 @@ const OrdersScreen = () => {
       <View style={styles.orderItems}>
         {item.items.slice(0, 2).map((orderItem, index) => (
           <Text key={index} style={styles.itemText}>
-            {orderItem.quantity}x {orderItem.menuItem?.name || 'Item'}
+            {String(orderItem.quantity)}x {orderItem.menuItem?.name || 'Item'}
           </Text>
         ))}
         {item.items.length > 2 && (
-          <Text style={styles.moreText}>+{item.items.length - 2} more items</Text>
+          <Text style={styles.moreText}>+{String(item.items.length - 2)} more items</Text>
         )}
       </View>
 
       <View style={styles.orderFooter}>
-        <Text style={styles.totalText}>₹{item.totalAmount}</Text>
+        <Text style={styles.totalText}>₹{String(item.totalAmount)}</Text>
         <Text style={styles.paymentMethod}>
           {item.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
         </Text>

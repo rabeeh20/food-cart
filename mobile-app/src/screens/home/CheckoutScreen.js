@@ -146,8 +146,8 @@ const CheckoutScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Order Summary</Text>
         <View style={styles.summaryCard}>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Items ({cart.length})</Text>
-            <Text style={styles.summaryValue}>₹{getCartTotal()}</Text>
+            <Text style={styles.summaryLabel}>Items ({String(cart.length)})</Text>
+            <Text style={styles.summaryValue}>₹{String(getCartTotal())}</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Delivery Fee</Text>
@@ -155,7 +155,7 @@ const CheckoutScreen = ({ navigation }) => {
           </View>
           <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>₹{getCartTotal() + 40}</Text>
+            <Text style={styles.totalValue}>₹{String(getCartTotal() + 40)}</Text>
           </View>
         </View>
       </View>

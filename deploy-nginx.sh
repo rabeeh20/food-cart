@@ -1,24 +1,37 @@
 #!/bin/bash
-# Deploy Nginx Configuration Script
-# Run this on your EC2 server
 
-echo "🚀 Deploying Nginx configuration..."
+# Food Delivery App - Nginx Deployment Script
+# This script deploys the HTTP-only nginx configuration for the food delivery app
+# Run with: sudo ./deploy-nginx.sh
 
-# Backup existing config
-if [ -f /etc/nginx/sites-available/food-delivery ]; then
-    echo "📦 Backing up existing config..."
-    sudo cp /etc/nginx/sites-available/food-delivery /etc/nginx/sites-available/food-delivery.backup.$(date +%Y%m%d_%H%M%S)
+echo "=========================================="
+echo "Food Delivery App - Nginx Deployment"
+echo "=========================================="
+echo ""
+
+# Check if running as root
+if [ "$EUID" -ne 0 ]; then
+    echo "❌ Please run as root or with sudo"
+    exit 1
 fi
 
-# Create the nginx config
+# Backup existing config
+BACKUP_FILE="/etc/nginx/sites-available/food-delivery.backup.$(date +%Y%m%d_%H%M%S)"
+if [ -f "/etc/nginx/sites-available/food-delivery" ]; then
+    echo "📦 Backing up existing config to: $BACKUP_FILE"
+    cp /etc/nginx/sites-available/food-delivery "$BACKUP_FILE"
+fi
+
+# Create new nginx configuration
 echo "📝 Creating new nginx configuration..."
-sudo tee /etc/nginx/sites-available/food-delivery > /dev/null <<'EOF'
+cat > /etc/nginx/sites-available/food-delivery <<'EOF'
 # Nginx Configuration for Food Delivery Application
 # HTTP ONLY (No SSL) - Production Ready
+# FIXED: No nested location blocks to prevent 500 errors
 
 server {
     listen 80;
-    server_name _;
+    server_name _;  # Accept all hostnames/IPs
 
     client_max_body_size 10M;
 
@@ -44,6 +57,7 @@ server {
         add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, PATCH, OPTIONS' always;
         add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type' always;
 
+        # Handle preflight requests
         if ($request_method = 'OPTIONS') {
             return 204;
         }
@@ -60,25 +74,48 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket timeout settings
         proxy_read_timeout 86400;
         proxy_send_timeout 86400;
 
+        # CORS for Socket.io
         add_header 'Access-Control-Allow-Origin' '*' always;
         add_header 'Access-Control-Allow-Credentials' 'true' always;
     }
 
-    # Admin app
+    # Admin app - Simplified without nested locations
     location /admin {
         alias /var/www/food-delivery/admin-app/dist;
         index index.html;
-        try_files $uri $uri/ /admin/index.html =404;
+        try_files $uri $uri/ /admin/index.html;
+
+        # Cache control for HTML files only
+        add_header Cache-Control "no-cache" always;
     }
 
-    # User app (default)
+    # Admin app static assets with caching
+    location ~ ^/admin/assets/ {
+        alias /var/www/food-delivery/admin-app/dist/assets/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # User app static assets with caching
+    location ~ ^/assets/ {
+        root /var/www/food-delivery/user-app/dist;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # User app (default) - Must be last
     location / {
         root /var/www/food-delivery/user-app/dist;
         index index.html;
-        try_files $uri $uri/ /index.html =404;
+        try_files $uri $uri/ /index.html;
+
+        # Cache control for HTML files only
+        add_header Cache-Control "no-cache" always;
     }
 
     # Gzip compression
@@ -87,35 +124,65 @@ server {
     gzip_proxied any;
     gzip_comp_level 6;
     gzip_min_length 1000;
-    gzip_types text/plain text/css text/xml text/javascript application/json application/javascript application/xml+rss application/rss+xml application/atom+xml image/svg+xml;
+    gzip_types
+        text/plain
+        text/css
+        text/xml
+        text/javascript
+        application/json
+        application/javascript
+        application/xml+rss
+        application/rss+xml
+        application/atom+xml
+        image/svg+xml;
 }
 EOF
 
 # Enable the site
-echo "🔗 Enabling site..."
-sudo ln -sf /etc/nginx/sites-available/food-delivery /etc/nginx/sites-enabled/
-
-# Remove default site if exists
-if [ -f /etc/nginx/sites-enabled/default ]; then
-    echo "🗑️  Removing default site..."
-    sudo rm /etc/nginx/sites-enabled/default
-fi
+echo "🔗 Enabling site configuration..."
+ln -sf /etc/nginx/sites-available/food-delivery /etc/nginx/sites-enabled/
 
 # Test nginx configuration
+echo ""
 echo "🧪 Testing nginx configuration..."
-sudo nginx -t
+nginx -t
 
 if [ $? -eq 0 ]; then
-    echo "✅ Configuration test passed!"
-    echo "🔄 Reloading nginx..."
-    sudo systemctl reload nginx
-    echo "✅ Nginx reloaded successfully!"
+    # Reload nginx
     echo ""
-    echo "🎉 Deployment complete!"
-    echo "📱 Mobile App API: http://YOUR_IP/api"
-    echo "👤 User App: http://YOUR_IP/"
-    echo "🔧 Admin App: http://YOUR_IP/admin"
+    echo "🔄 Reloading nginx..."
+    systemctl reload nginx
+
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo "=========================================="
+        echo "✅ Deployment successful!"
+        echo "=========================================="
+        echo ""
+        echo "Your apps should now be accessible at:"
+        echo "  • User App:  http://YOUR_IP/"
+        echo "  • Admin App: http://YOUR_IP/admin"
+        echo "  • API:       http://YOUR_IP/api"
+        echo ""
+        echo "Changes from previous config:"
+        echo "  ✓ Fixed nested location blocks (admin app 500 error)"
+        echo "  ✓ Simplified admin app routing"
+        echo "  ✓ Proper static asset caching"
+        echo "  ✓ CORS headers for mobile app"
+        echo ""
+    else
+        echo ""
+        echo "❌ Failed to reload nginx"
+        echo "Please check the logs: sudo tail -f /var/log/nginx/error.log"
+        exit 1
+    fi
 else
-    echo "❌ Configuration test failed! Please check the errors above."
+    echo ""
+    echo "❌ Nginx configuration test failed"
+    echo "Restoring backup..."
+    if [ -f "$BACKUP_FILE" ]; then
+        cp "$BACKUP_FILE" /etc/nginx/sites-available/food-delivery
+        echo "Backup restored. Please check the configuration."
+    fi
     exit 1
 fi

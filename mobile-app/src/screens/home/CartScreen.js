@@ -57,9 +57,9 @@ const CartScreen = ({ navigation }) => {
       <Image source={{ uri: item.image }} style={styles.itemImage} />
       <View style={styles.itemDetails}>
         <Text style={styles.itemName} numberOfLines={2}>
-          {item.name}
+          {String(item.name)}
         </Text>
-        <Text style={styles.itemPrice}>₹{item.price}</Text>
+        <Text style={styles.itemPrice}>₹{String(item.price)}</Text>
 
         <View style={styles.quantityContainer}>
           <TouchableOpacity
@@ -68,7 +68,7 @@ const CartScreen = ({ navigation }) => {
           >
             <Ionicons name="remove" size={16} color={COLORS.primary} />
           </TouchableOpacity>
-          <Text style={styles.quantityText}>{item.quantity}</Text>
+          <Text style={styles.quantityText}>{String(item.quantity)}</Text>
           <TouchableOpacity
             style={styles.quantityButton}
             onPress={() => updateQuantity(item._id, item.quantity + 1, item.variant)}
@@ -85,7 +85,7 @@ const CartScreen = ({ navigation }) => {
         >
           <Ionicons name="trash-outline" size={20} color={COLORS.error} />
         </TouchableOpacity>
-        <Text style={styles.itemTotal}>₹{item.price * item.quantity}</Text>
+        <Text style={styles.itemTotal}>₹{String(item.price * item.quantity)}</Text>
       </View>
     </View>
   );
@@ -109,7 +109,7 @@ const CartScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Shopping Cart ({cart.length} items)</Text>
+        <Text style={styles.headerTitle}>Shopping Cart ({String(cart.length)} items)</Text>
         <TouchableOpacity onPress={handleClearCart}>
           <Text style={styles.clearText}>Clear All</Text>
         </TouchableOpacity>
@@ -126,7 +126,7 @@ const CartScreen = ({ navigation }) => {
         <View style={styles.summary}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>₹{getCartTotal()}</Text>
+            <Text style={styles.summaryValue}>₹{String(getCartTotal())}</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Delivery Fee</Text>
@@ -134,7 +134,7 @@ const CartScreen = ({ navigation }) => {
           </View>
           <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>₹{getCartTotal() + 40}</Text>
+            <Text style={styles.totalValue}>₹{String(getCartTotal() + 40)}</Text>
           </View>
         </View>
 
