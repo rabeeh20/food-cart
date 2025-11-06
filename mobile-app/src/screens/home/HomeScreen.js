@@ -9,6 +9,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -25,7 +26,7 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [gameEnabled, setGameEnabled] = useState(false);
-  const { cart, addToCart, getCartCount } = useCart();
+  const { cart, addToCart, getCartCount, getCartTotal, clearCart } = useCart();
 
   useEffect(() => {
     fetchData();
@@ -91,6 +92,21 @@ const HomeScreen = ({ navigation }) => {
         visibilityTime: 2000,
       });
     }
+  };
+
+  const handleClearCart = () => {
+    Alert.alert(
+      'Clear Cart',
+      'Are you sure you want to remove all items from your cart?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: () => clearCart(),
+        },
+      ]
+    );
   };
 
   const renderMenuItem = ({ item }) => {
@@ -205,6 +221,7 @@ const HomeScreen = ({ navigation }) => {
 
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={cart.length > 0 ? styles.scrollViewWithCart : null}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
         }
@@ -289,6 +306,51 @@ const HomeScreen = ({ navigation }) => {
           )}
         </View>
       </ScrollView>
+
+      {/* Mobile Checkout Bar */}
+      {cart.length > 0 && (
+        <View style={styles.mobileCheckoutBar}>
+          <View style={styles.checkoutBarContent}>
+            {/* Item Thumbnail with Badge */}
+            <View style={styles.thumbnailContainer}>
+              <Image
+                source={{ uri: cart[0].image }}
+                style={styles.cartThumbnail}
+              />
+              {cart.length > 1 && (
+                <View style={styles.itemCountBadge}>
+                  <Text style={styles.itemCountText}>{String(cart.length)}</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Item Info */}
+            <View style={styles.checkoutInfo}>
+              <Text style={styles.checkoutItemCount}>
+                {String(cart.length)} item{cart.length > 1 ? 's' : ''}
+              </Text>
+              <Text style={styles.checkoutPrice}>₹{String(getCartTotal())}</Text>
+            </View>
+
+            {/* Checkout Button */}
+            <TouchableOpacity
+              style={styles.checkoutButton}
+              onPress={() => navigation.navigate('Cart')}
+            >
+              <Text style={styles.checkoutButtonText}>Checkout</Text>
+              <Ionicons name="arrow-forward" size={16} color={COLORS.white} />
+            </TouchableOpacity>
+
+            {/* Delete Button */}
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={handleClearCart}
+            >
+              <Ionicons name="trash-outline" size={22} color={COLORS.danger} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -568,6 +630,91 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZE.base,
     color: COLORS.textLight,
     marginTop: SPACING.lg,
+  },
+
+  // ScrollView with cart
+  scrollViewWithCart: {
+    paddingBottom: 100,
+  },
+
+  // Mobile Checkout Bar
+  mobileCheckoutBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.white,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    ...SHADOWS.large,
+  },
+  checkoutBarContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  thumbnailContainer: {
+    position: 'relative',
+  },
+  cartThumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: RADIUS.sm,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  itemCountBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.round,
+    width: 22,
+    height: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.white,
+  },
+  itemCountText: {
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.white,
+  },
+  checkoutInfo: {
+    flex: 1,
+    marginLeft: SPACING.xs,
+  },
+  checkoutItemCount: {
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textMedium,
+    marginBottom: 2,
+  },
+  checkoutPrice: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.dark,
+  },
+  checkoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: RADIUS.md,
+    gap: 6,
+    ...SHADOWS.button,
+  },
+  checkoutButtonText: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.bold,
+    color: COLORS.white,
+  },
+  deleteButton: {
+    padding: SPACING.xs,
+    marginLeft: SPACING.xs,
   },
 });
 
