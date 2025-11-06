@@ -65,11 +65,11 @@ const HomeScreen = ({ navigation }) => {
       <Image source={{ uri: item.image }} style={styles.itemImage} />
       <View style={styles.itemInfo}>
         <Text style={styles.itemName} numberOfLines={1}>
-          {item.name}
+          {String(item.name || 'Unnamed')}
         </Text>
-        <Text style={styles.itemCategory}>{item.category}</Text>
+        <Text style={styles.itemCategory}>{String(item.category || 'Uncategorized')}</Text>
         <View style={styles.itemFooter}>
-          <Text style={styles.itemPrice}>₹{item.price}</Text>
+          <Text style={styles.itemPrice}>₹{String(item.price || 0)}</Text>
           {item.stock > 0 ? (
             <View style={styles.stockBadge}>
               <Text style={styles.stockText}>In Stock</Text>
@@ -106,7 +106,7 @@ const HomeScreen = ({ navigation }) => {
           <Ionicons name="cart" size={24} color={COLORS.primary} />
           {getCartCount() > 0 && (
             <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>{getCartCount()}</Text>
+              <Text style={styles.cartBadgeText}>{String(getCartCount())}</Text>
             </View>
           )}
         </TouchableOpacity>

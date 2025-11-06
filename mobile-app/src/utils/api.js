@@ -18,6 +18,8 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log(`🌐 API Request: ${config.method.toUpperCase()} ${config.baseURL}${config.url}`);
+    console.log('Request data:', config.data);
     return config;
   },
   (error) => {
@@ -27,8 +29,15 @@ api.interceptors.request.use(
 
 // Response interceptor - handle errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ API Response: ${response.config.method.toUpperCase()} ${response.config.url} - Status: ${response.status}`);
+    return response;
+  },
   async (error) => {
+    console.log(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+    console.log('Error status:', error.response?.status);
+    console.log('Error message:', error.response?.data?.message || error.message);
+
     if (error.response?.status === 401) {
       // Token expired or invalid - handled by AuthContext
       console.log('Unauthorized - token may be expired');
@@ -54,7 +63,7 @@ export const menuAPI = {
 // Order APIs
 export const orderAPI = {
   create: (orderData) => api.post('/orders', orderData),
-  getMyOrders: () => api.get('/orders/my-orders'),
+  getMyOrders: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),
 };
 

@@ -32,9 +32,13 @@ export const AuthProvider = ({ children }) => {
 
   const requestOTP = async (email) => {
     try {
+      console.log('📧 Requesting OTP for:', email);
       const response = await authAPI.requestOTP(email);
+      console.log('✅ OTP request successful:', response.data);
       return { success: true, message: response.data.message };
     } catch (error) {
+      console.log('❌ OTP request failed:', error.message);
+      console.log('Error details:', error.response?.data || error);
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to send OTP',

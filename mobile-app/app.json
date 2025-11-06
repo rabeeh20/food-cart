@@ -20,7 +20,7 @@
       "package": "com.fooddelivery.app"
     },
     "extra": {
-      "apiUrl": "http://16.16.154.49:5000/api"
+      "apiUrl": "http://16.16.154.49/api"
     }
   }
 }

@@ -60,18 +60,18 @@ const MenuItemDetailScreen = ({ route, navigation }) => {
         <View style={styles.content}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.category}>{item.category}</Text>
+              <Text style={styles.name}>{String(item.name || 'Unnamed Item')}</Text>
+              <Text style={styles.category}>{String(item.category || 'Uncategorized')}</Text>
             </View>
             {item.rating && (
               <View style={styles.rating}>
                 <Ionicons name="star" size={16} color="#FFD700" />
-                <Text style={styles.ratingText}>{item.rating}</Text>
+                <Text style={styles.ratingText}>{String(item.rating)}</Text>
               </View>
             )}
           </View>
 
-          <Text style={styles.price}>₹{item.price}</Text>
+          <Text style={styles.price}>₹{String(item.price || 0)}</Text>
 
           {item.description && (
             <View style={styles.section}>
@@ -86,7 +86,7 @@ const MenuItemDetailScreen = ({ route, navigation }) => {
               {item.stock > 0 ? (
                 <>
                   <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
-                  <Text style={styles.stockText}>{item.stock} items in stock</Text>
+                  <Text style={styles.stockText}>{String(item.stock)} items in stock</Text>
                 </>
               ) : (
                 <>
@@ -110,7 +110,7 @@ const MenuItemDetailScreen = ({ route, navigation }) => {
             >
               <Ionicons name="remove" size={20} color={quantity <= 1 ? COLORS.gray : COLORS.primary} />
             </TouchableOpacity>
-            <Text style={styles.quantityText}>{quantity}</Text>
+            <Text style={styles.quantityText}>{String(quantity)}</Text>
             <TouchableOpacity
               style={styles.quantityButton}
               onPress={incrementQuantity}
