@@ -14,11 +14,12 @@ export const SocketProvider = ({ children }) => {
     // Create socket connection
     const socketURL = API_URL.replace('/api', '');
     const newSocket = io(socketURL, {
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionAttempts: 3,
       reconnectionDelay: 2000,
       timeout: 10000,
+      forceNew: true,
     });
 
     newSocket.on('connect', () => {
