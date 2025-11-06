@@ -63,22 +63,22 @@ const MenuItemDetailScreen = ({ route, navigation }) => {
               <Text style={styles.name}>{String(item.name || 'Unnamed Item')}</Text>
               <Text style={styles.category}>{String(item.category || 'Uncategorized')}</Text>
             </View>
-            {item.rating && (
+            {item.rating ? (
               <View style={styles.rating}>
                 <Ionicons name="star" size={16} color="#FFD700" />
                 <Text style={styles.ratingText}>{String(item.rating)}</Text>
               </View>
-            )}
+            ) : null}
           </View>
 
           <Text style={styles.price}>₹{String(item.price || 0)}</Text>
 
-          {item.description && (
+          {item.description ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Description</Text>
               <Text style={styles.description}>{String(item.description)}</Text>
             </View>
-          )}
+          ) : null}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Availability</Text>
