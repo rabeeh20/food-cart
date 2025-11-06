@@ -119,21 +119,18 @@ const HomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logoCircle}>
-              <Ionicons name="restaurant" size={24} color={COLORS.white} />
-            </View>
-            <View style={styles.appNameContainer}>
-              <Text style={styles.appName}>FoodCart</Text>
-              <Text style={styles.appTagline}>Delicious food delivered</Text>
-            </View>
-          </View>
+          <Text style={styles.deliverToLabel}>Deliver to</Text>
+          <TouchableOpacity style={styles.locationButton}>
+            <Ionicons name="location" size={18} color={COLORS.primary} />
+            <Text style={styles.locationText}>Current Location</Text>
+            <Ionicons name="chevron-down" size={16} color={COLORS.text} />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity
           style={styles.cartButton}
           onPress={() => navigation.navigate('Cart')}
         >
-          <Ionicons name="cart" size={26} color={COLORS.primary} />
+          <Ionicons name="cart-outline" size={28} color={COLORS.text} />
           {getCartCount() > 0 && (
             <View style={styles.cartBadge}>
               <Text style={styles.cartBadgeText}>{String(getCartCount())}</Text>
@@ -222,56 +219,35 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.sm,
     backgroundColor: COLORS.white,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 3,
   },
   headerLeft: {
     flex: 1,
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  appNameContainer: {
-    marginLeft: SPACING.sm,
-  },
-  appName: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    letterSpacing: -0.5,
-  },
-  appTagline: {
+  deliverToLabel: {
     fontSize: FONT_SIZES.xs,
     color: COLORS.textLight,
-    marginTop: 2,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  locationText: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginLeft: 2,
+    marginRight: 2,
   },
   cartButton: {
     position: 'relative',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 99, 71, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 8,
   },
   cartBadge: {
     position: 'absolute',
