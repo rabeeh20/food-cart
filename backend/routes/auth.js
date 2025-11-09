@@ -37,6 +37,9 @@ router.post('/request-otp', async (req, res) => {
     const otp = generateOTP();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+    // TEMPORARY: Log OTP for testing when SMS delivery fails
+    console.log(`🔐 OTP for ${phone}: ${otp} (Expires in 10 minutes)`);
+
     // Find or create user
     let user = await User.findOne({ phone });
 
