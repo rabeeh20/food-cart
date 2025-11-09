@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Food Delivery",
+    "name": "FoodCart",
     "slug": "food-delivery-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
       "resizeMode": "contain",
-      "backgroundColor": "#ff6347"
+      "backgroundColor": "#FF6B35"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -17,10 +17,14 @@
       "bundleIdentifier": "com.fooddelivery.app"
     },
     "android": {
-      "package": "com.fooddelivery.app"
+      "package": "com.fooddelivery.app",
+      "versionCode": 1
     },
     "extra": {
       "apiUrl": "http://16.16.154.49/api"
+    },
+    "cli": {
+      "appVersionSource": "local"
     }
   }
 }

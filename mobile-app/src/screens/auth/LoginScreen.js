@@ -15,33 +15,33 @@ import { useAuth } from '../../context/AuthContext';
 import { COLORS, SPACING, FONT_SIZES } from '../../utils/constants';
 
 const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const { requestOTP } = useAuth();
 
   const handleSendOTP = async () => {
-    if (!email.trim()) {
+    if (!phone.trim()) {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Please enter your email address',
+        text2: 'Please enter your phone number',
       });
       return;
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Basic phone validation (10 digits starting with 6-9)
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Please enter a valid email address',
+        text2: 'Please enter a valid 10-digit mobile number',
       });
       return;
     }
 
     setLoading(true);
-    const result = await requestOTP(email);
+    const result = await requestOTP(phone);
     setLoading(false);
 
     if (result.success) {
@@ -50,7 +50,7 @@ const LoginScreen = ({ navigation }) => {
         text1: 'Success',
         text2: result.message,
       });
-      navigation.navigate('OTPVerification', { email });
+      navigation.navigate('OTPVerification', { phone });
     } else {
       Toast.show({
         type: 'error',
@@ -72,17 +72,18 @@ const LoginScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.formContainer}>
-          <Text style={styles.label}>Email Address</Text>
+          <Text style={styles.label}>Phone Number</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
+            placeholder="Enter your 10-digit phone number"
+            value={phone}
+            onChangeText={(text) => setPhone(text.replace(/\D/g, ''))}
+            keyboardType="phone-pad"
+            maxLength={10}
             autoCorrect={false}
             editable={!loading}
           />
+          <Text style={styles.hint}>Enter 10-digit number (e.g., 9876543210)</Text>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -97,7 +98,7 @@ const LoginScreen = ({ navigation }) => {
           </TouchableOpacity>
 
           <Text style={styles.infoText}>
-            We'll send you a one-time password to verify your account
+            We'll send you a one-time password via SMS to verify your account
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -151,6 +152,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: SPACING.md,
     fontSize: FONT_SIZES.md,
+    marginBottom: SPACING.xs,
+  },
+  hint: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textLight,
     marginBottom: SPACING.lg,
   },
   button: {

@@ -30,10 +30,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const requestOTP = async (email) => {
+  const requestOTP = async (phone) => {
     try {
-      console.log('📧 Requesting OTP for:', email);
-      const response = await authAPI.requestOTP(email);
+      console.log('📱 Requesting OTP for:', phone);
+      const response = await authAPI.requestOTP(phone);
       console.log('✅ OTP request successful:', response.data);
       return { success: true, message: response.data.message };
     } catch (error) {
@@ -46,9 +46,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyOTP = async (email, otp) => {
+  const verifyOTP = async (phone, otp) => {
     try {
-      const response = await authAPI.verifyOTP(email, otp);
+      const response = await authAPI.verifyOTP(phone, otp);
 
       if (response.data.success) {
         const { token, user: userData } = response.data;

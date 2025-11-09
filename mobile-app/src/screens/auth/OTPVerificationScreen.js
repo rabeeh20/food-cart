@@ -15,7 +15,7 @@ import { useAuth } from '../../context/AuthContext';
 import { COLORS, SPACING, FONT_SIZES } from '../../utils/constants';
 
 const OTPVerificationScreen = ({ route, navigation }) => {
-  const { email } = route.params;
+  const { phone } = route.params;
   const [otp, setOTP] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -32,7 +32,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     }
 
     setLoading(true);
-    const result = await verifyOTP(email, otp);
+    const result = await verifyOTP(phone, otp);
     setLoading(false);
 
     if (result.success) {
@@ -53,7 +53,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
 
   const handleResendOTP = async () => {
     setResending(true);
-    const result = await requestOTP(email);
+    const result = await requestOTP(phone);
     setResending(false);
 
     if (result.success) {
@@ -82,7 +82,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
           <Text style={styles.title}>Verify OTP</Text>
           <Text style={styles.subtitle}>
             Enter the 6-digit code sent to{'\n'}
-            {email}
+            +91{phone}
           </Text>
         </View>
 
@@ -91,7 +91,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
             style={styles.input}
             placeholder="Enter 6-digit OTP"
             value={otp}
-            onChangeText={setOTP}
+            onChangeText={(text) => setOTP(text.replace(/\D/g, ''))}
             keyboardType="number-pad"
             maxLength={6}
             editable={!loading}
@@ -120,7 +120,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backText}>Change email address</Text>
+            <Text style={styles.backText}>Change phone number</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

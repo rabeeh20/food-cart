@@ -1,18 +1,14 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-  email: {
+  phone: {
     type: String,
     required: true,
     unique: true,
-    lowercase: true,
-    trim: true
+    trim: true,
+    match: [/^(\+91)?[6-9]\d{9}$/, 'Please enter a valid Indian phone number']
   },
   name: {
-    type: String,
-    trim: true
-  },
-  phone: {
     type: String,
     trim: true
   },
