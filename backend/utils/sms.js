@@ -1,9 +1,15 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
+
+// Load environment variables FIRST
+dotenv.config();
 
 // MSG91 Configuration from environment variables
 const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY;
 const MSG91_SENDER_ID = process.env.MSG91_SENDER_ID;
 const MSG91_TEMPLATE_ID = process.env.MSG91_TEMPLATE_ID;
+
+console.log('[SMS.JS] MSG91_AUTH_KEY loaded:', MSG91_AUTH_KEY ? 'YES ✓' : 'NO ✗');
 
 /**
  * Generate a 6-digit OTP
