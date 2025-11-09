@@ -3,7 +3,6 @@ import Order from '../models/Order.js';
 import MenuItem from '../models/MenuItem.js';
 import Fish from '../models/Fish.js';
 import { verifyUser } from '../middleware/auth.js';
-import { sendOrderConfirmation } from '../utils/email.js';
 
 const router = express.Router();
 
@@ -172,15 +171,7 @@ router.post('/', verifyUser, async (req, res) => {
         }
       }
 
-      // Send order confirmation email
-      if (req.user.email) {
-        await sendOrderConfirmation(req.user.email, {
-          orderId: order.orderId,
-          customerName: deliveryAddress.fullName,
-          totalAmount: order.totalAmount,
-          status: 'Placed'
-        });
-      }
+      // Email notifications removed - using phone-based SMS OTP authentication now
     }
     // For Razorpay, stock will be reduced after payment verification
 
