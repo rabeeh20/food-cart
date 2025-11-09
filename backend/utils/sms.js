@@ -21,8 +21,8 @@ export const generateOTP = () => {
  */
 export const sendOTPSMS = async (phone, otp) => {
   try {
-    // Validate MSG91 credentials
-    if (!MSG91_AUTH_KEY || !MSG91_TEMPLATE_ID) {
+    // Validate MSG91 credentials - only AUTH_KEY is required for default template
+    if (!MSG91_AUTH_KEY) {
       console.error('MSG91 credentials not configured');
       return {
         success: false,
@@ -36,11 +36,15 @@ export const sendOTPSMS = async (phone, otp) => {
     // Prepare MSG91 API request
     const url = 'https://control.msg91.com/api/v5/otp';
     const payload = {
-      template_id: MSG91_TEMPLATE_ID,
       mobile: `91${phoneNumber}`,
       authkey: MSG91_AUTH_KEY,
       otp: otp
     };
+
+    // Add template ID if configured (otherwise uses default template)
+    if (MSG91_TEMPLATE_ID) {
+      payload.template_id = MSG91_TEMPLATE_ID;
+    }
 
     // Add sender ID if configured
     if (MSG91_SENDER_ID) {
