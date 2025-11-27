@@ -49,12 +49,50 @@ const OrdersScreen = () => {
     }
   };
 
-  const handleOrderUpdate = (updatedOrder) => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order._id === updatedOrder._id ? updatedOrder : order
-      )
-    );
+  const handleOrderUpdate = (data) => {
+    // Update the specific order in the list
+    setOrders(prevOrders => {
+      return prevOrders.map(order => {
+        if (order.orderId === data.orderId) {
+          return { ...order, orderStatus: data.status, paymentStatus: data.paymentStatus || order.paymentStatus };
+        }
+        return order;
+      });
+    });
+
+    // Show toast notification
+    const statusMessages = {
+      placed: 'Order placed successfully',
+      confirmed: 'Order confirmed',
+      preparing: 'Your food is being prepared',
+      ready: 'Your order is ready',
+      out_for_delivery: 'Your order is on the way',
+      delivered: 'Order delivered',
+      cancelled: 'Order cancelled'
+    };
+
+    const message = data.message || statusMessages[data.status] || 'Order status updated';
+
+    if (data.status === 'delivered') {
+      Toast.show({
+        type: 'success',
+        text1: '🎉 ' + message,
+        text2: 'Thank you for ordering!',
+        visibilityTime: 5000,
+      });
+    } else if (data.status === 'cancelled') {
+      Toast.show({
+        type: 'error',
+        text1: message,
+        visibilityTime: 5000,
+      });
+    } else {
+      Toast.show({
+        type: 'success',
+        text1: '📦 ' + message,
+        visibilityTime: 4000,
+      });
+    }
   };
 
   const onRefresh = () => {
@@ -302,21 +340,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: SPACING.lg,
+    flexWrap: 'nowrap',
   },
   headerLeft: {
     flex: 1,
     marginRight: SPACING.md,
+    minWidth: 0,
   },
   orderIdRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
     marginBottom: 4,
+    flexWrap: 'wrap',
   },
   orderId: {
     fontSize: FONT_SIZE.lg,
     fontWeight: FONT_WEIGHT.bold,
     color: COLORS.dark,
+    flexShrink: 1,
   },
   liveIndicator: {
     flexDirection: 'row',
@@ -348,6 +390,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
     borderRadius: RADIUS.xl,
+    flexShrink: 0,
+    alignSelf: 'flex-start',
   },
   statusText: {
     fontSize: FONT_SIZE.xs,

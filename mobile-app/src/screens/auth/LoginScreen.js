@@ -11,37 +11,75 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, SPACING, FONT_SIZES } from '../../utils/constants';
 
-const LoginScreen = ({ navigation }) => {
-  const [phone, setPhone] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { requestOTP } = useAuth();
+WebBrowser.maybeCompleteAuthSession();
 
-  const handleSendOTP = async () => {
-    if (!phone.trim()) {
+const LoginScreen = ({ navigation }) => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { requestOTP, googleLogin } = useAuth();
+
+  // Google OAuth configuration
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  });
+
+  React.useEffect(() => {
+    if (response?.type === 'success') {
+      const { id_token } = response.params;
+      handleGoogleLogin(id_token);
+    }
+  }, [response]);
+
+  const handleGoogleLogin = async (credential) => {
+    setLoading(true);
+    const result = await googleLogin(credential);
+    setLoading(false);
+
+    if (result.success) {
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Google login successful!',
+      });
+    } else {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Please enter your phone number',
+        text2: result.message,
+      });
+    }
+  };
+
+  const handleSendOTP = async () => {
+    if (!email.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter your email address',
       });
       return;
     }
 
-    // Basic phone validation (10 digits starting with 6-9)
-    const phoneRegex = /^[6-9]\d{9}$/;
-    if (!phoneRegex.test(phone)) {
+    // Basic email validation
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
       Toast.show({
         type: 'error',
         text1: 'Error',
-        text2: 'Please enter a valid 10-digit mobile number',
+        text2: 'Please enter a valid email address',
       });
       return;
     }
 
     setLoading(true);
-    const result = await requestOTP(phone);
+    const result = await requestOTP(email);
     setLoading(false);
 
     if (result.success) {
@@ -50,7 +88,7 @@ const LoginScreen = ({ navigation }) => {
         text1: 'Success',
         text2: result.message,
       });
-      navigation.navigate('OTPVerification', { phone });
+      navigation.navigate('OTPVerification', { email });
     } else {
       Toast.show({
         type: 'error',
@@ -72,18 +110,18 @@ const LoginScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.formContainer}>
-          <Text style={styles.label}>Phone Number</Text>
+          <Text style={styles.label}>Email Address</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your 10-digit phone number"
-            value={phone}
-            onChangeText={(text) => setPhone(text.replace(/\D/g, ''))}
-            keyboardType="phone-pad"
-            maxLength={10}
+            placeholder="Enter your email address"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
             autoCorrect={false}
             editable={!loading}
           />
-          <Text style={styles.hint}>Enter 10-digit number (e.g., 9876543210)</Text>
+          <Text style={styles.hint}>We'll send you an OTP to verify your email</Text>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -97,8 +135,22 @@ const LoginScreen = ({ navigation }) => {
             )}
           </TouchableOpacity>
 
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.googleButton, loading && styles.buttonDisabled]}
+            onPress={() => promptAsync()}
+            disabled={!request || loading}
+          >
+            <Text style={styles.googleButtonText}>Continue with Google</Text>
+          </TouchableOpacity>
+
           <Text style={styles.infoText}>
-            We'll send you a one-time password via SMS to verify your account
+            We'll verify your account via email OTP or Google sign-in
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -171,6 +223,36 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: COLORS.white,
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: SPACING.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.lightGray,
+  },
+  dividerText: {
+    marginHorizontal: SPACING.md,
+    color: COLORS.textLight,
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '500',
+  },
+  googleButton: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.lightGray,
+    borderRadius: 10,
+    padding: SPACING.md,
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  googleButtonText: {
+    color: COLORS.text,
     fontSize: FONT_SIZES.md,
     fontWeight: '600',
   },

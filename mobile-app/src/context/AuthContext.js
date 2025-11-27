@@ -30,10 +30,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const requestOTP = async (phone) => {
+  const requestOTP = async (email) => {
     try {
-      console.log('📱 Requesting OTP for:', phone);
-      const response = await authAPI.requestOTP(phone);
+      console.log('📧 Requesting OTP for:', email);
+      const response = await authAPI.requestOTP(email);
       console.log('✅ OTP request successful:', response.data);
       return { success: true, message: response.data.message };
     } catch (error) {
@@ -46,9 +46,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyOTP = async (phone, otp) => {
+  const verifyOTP = async (email, otp) => {
     try {
-      const response = await authAPI.verifyOTP(phone, otp);
+      const response = await authAPI.verifyOTP(email, otp);
 
       if (response.data.success) {
         const { token, user: userData } = response.data;
@@ -68,6 +68,34 @@ export const AuthProvider = ({ children }) => {
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to verify OTP',
+      };
+    }
+  };
+
+  const googleLogin = async (credential) => {
+    try {
+      console.log('🔐 Google login with credential');
+      const response = await authAPI.googleLogin(credential);
+
+      if (response.data.success) {
+        const { token, user: userData } = response.data;
+
+        // Save token and user data
+        await saveToken(token);
+        await saveUser(userData);
+
+        setUser(userData);
+        setIsAuthenticated(true);
+
+        return { success: true, message: 'Google login successful' };
+      }
+
+      return { success: false, message: 'Google login failed' };
+    } catch (error) {
+      console.log('❌ Google login failed:', error.message);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to login with Google',
       };
     }
   };
@@ -100,6 +128,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         requestOTP,
         verifyOTP,
+        googleLogin,
         logout,
         updateUser,
       }}

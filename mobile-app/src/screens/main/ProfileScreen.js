@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,34 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Toast from 'react-native-toast-message';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS, SPACING, FONT_SIZES } from '../../utils/constants';
+import {
+  requestNotificationPermission,
+  requestLocationPermission,
+  checkNotificationPermission,
+  checkLocationPermission,
+} from '../../utils/permissions';
 
-const ProfileScreen = () => {
+const ProfileScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
+  const [notificationEnabled, setNotificationEnabled] = useState(false);
+  const [locationEnabled, setLocationEnabled] = useState(false);
+
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  const checkPermissions = async () => {
+    const notifStatus = await checkNotificationPermission();
+    const locStatus = await checkLocationPermission();
+    setNotificationEnabled(notifStatus);
+    setLocationEnabled(locStatus);
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -26,6 +47,140 @@ const ProfileScreen = () => {
           onPress: () => logout(),
         },
       ]
+    );
+  };
+
+  const handleEditProfile = () => {
+    Toast.show({
+      type: 'info',
+      text1: 'Coming Soon',
+      text2: 'Edit profile feature will be available soon',
+    });
+  };
+
+  const handleMyAddresses = () => {
+    Toast.show({
+      type: 'info',
+      text1: 'Coming Soon',
+      text2: 'Address management will be available soon',
+    });
+  };
+
+  const handlePaymentMethods = () => {
+    Toast.show({
+      type: 'info',
+      text1: 'Coming Soon',
+      text2: 'Saved payment methods will be available soon',
+    });
+  };
+
+  const handleNotifications = async () => {
+    Alert.alert(
+      'Notification Settings',
+      notificationEnabled
+        ? 'Notifications are enabled. You will receive order updates.'
+        : 'Would you like to enable notifications to receive order updates?',
+      notificationEnabled
+        ? [
+            { text: 'OK' },
+            {
+              text: 'Manage Permissions',
+              onPress: () => Linking.openSettings(),
+            },
+          ]
+        : [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Enable',
+              onPress: async () => {
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                  setNotificationEnabled(true);
+                  Toast.show({
+                    type: 'success',
+                    text1: 'Notifications Enabled',
+                    text2: 'You will now receive order updates',
+                  });
+                }
+              },
+            },
+          ]
+    );
+  };
+
+  const handleLocation = async () => {
+    Alert.alert(
+      'Location Access',
+      locationEnabled
+        ? 'Location access is enabled for accurate delivery estimates.'
+        : 'Would you like to enable location access for accurate delivery estimates?',
+      locationEnabled
+        ? [
+            { text: 'OK' },
+            {
+              text: 'Manage Permissions',
+              onPress: () => Linking.openSettings(),
+            },
+          ]
+        : [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Enable',
+              onPress: async () => {
+                const granted = await requestLocationPermission();
+                if (granted) {
+                  setLocationEnabled(true);
+                  Toast.show({
+                    type: 'success',
+                    text1: 'Location Enabled',
+                    text2: 'We can now provide accurate delivery estimates',
+                  });
+                }
+              },
+            },
+          ]
+    );
+  };
+
+  const handleLanguage = () => {
+    Toast.show({
+      type: 'info',
+      text1: 'Coming Soon',
+      text2: 'Language selection will be available soon',
+    });
+  };
+
+  const handleHelpSupport = () => {
+    Alert.alert(
+      'Help & Support',
+      'Choose an option:',
+      [
+        {
+          text: 'Call Support',
+          onPress: () => Linking.openURL('tel:+1234567890'),
+        },
+        {
+          text: 'Email Support',
+          onPress: () => Linking.openURL('mailto:support@foodcart.com'),
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
+  const handleTermsConditions = () => {
+    Alert.alert(
+      'Terms & Conditions',
+      'This would open the Terms & Conditions page. Implementation coming soon.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handlePrivacyPolicy = () => {
+    Alert.alert(
+      'Privacy Policy',
+      'This would open the Privacy Policy page. Implementation coming soon.',
+      [{ text: 'OK' }]
     );
   };
 
@@ -55,17 +210,17 @@ const ProfileScreen = () => {
           <MenuOption
             icon="person-outline"
             title="Edit Profile"
-            onPress={() => {}}
+            onPress={handleEditProfile}
           />
           <MenuOption
             icon="location-outline"
             title="My Addresses"
-            onPress={() => {}}
+            onPress={handleMyAddresses}
           />
           <MenuOption
             icon="card-outline"
             title="Payment Methods"
-            onPress={() => {}}
+            onPress={handlePaymentMethods}
           />
         </View>
       </View>
@@ -76,12 +231,17 @@ const ProfileScreen = () => {
           <MenuOption
             icon="notifications-outline"
             title="Notifications"
-            onPress={() => {}}
+            onPress={handleNotifications}
+          />
+          <MenuOption
+            icon="location-outline"
+            title="Location Access"
+            onPress={handleLocation}
           />
           <MenuOption
             icon="language-outline"
             title="Language"
-            onPress={() => {}}
+            onPress={handleLanguage}
           />
         </View>
       </View>
@@ -92,17 +252,17 @@ const ProfileScreen = () => {
           <MenuOption
             icon="help-circle-outline"
             title="Help & Support"
-            onPress={() => {}}
+            onPress={handleHelpSupport}
           />
           <MenuOption
             icon="document-text-outline"
             title="Terms & Conditions"
-            onPress={() => {}}
+            onPress={handleTermsConditions}
           />
           <MenuOption
             icon="shield-outline"
             title="Privacy Policy"
-            onPress={() => {}}
+            onPress={handlePrivacyPolicy}
           />
         </View>
       </View>

@@ -48,8 +48,9 @@ api.interceptors.response.use(
 
 // Auth APIs
 export const authAPI = {
-  requestOTP: (phone) => api.post('/auth/request-otp', { phone }),
-  verifyOTP: (phone, otp) => api.post('/auth/verify-otp', { phone, otp }),
+  requestOTP: (email) => api.post('/auth/request-otp', { email }),
+  verifyOTP: (email, otp) => api.post('/auth/verify-otp', { email, otp }),
+  googleLogin: (credential) => api.post('/auth/google', { credential }),
   getProfile: () => api.get('/auth/profile'),
 };
 

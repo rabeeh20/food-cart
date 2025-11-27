@@ -57,3 +57,5 @@ REAL_TIME_*.md
 # Windows reserved device names
 nul
 NUL
+mobile-app/android/
+output.pdf

@@ -5,6 +5,7 @@ import { verifyUser } from '../middleware/auth.js';
 import Order from '../models/Order.js';
 import User from '../models/User.js';
 import MenuItem from '../models/MenuItem.js';
+import { sendOrderConfirmation } from '../utils/email.js';
 
 const router = express.Router();
 
@@ -153,7 +154,15 @@ router.post('/verify-payment', verifyUser, async (req, res) => {
       paymentStatus: order.paymentStatus
     });
 
-    // Email notifications removed - using phone-based SMS OTP authentication now
+    // Send order confirmation email
+    const user = await User.findById(req.user._id);
+    if (user && user.email) {
+      await sendOrderConfirmation(user.email, {
+        orderId: order.orderId,
+        totalAmount: order.totalAmount,
+        address: order.deliveryAddress.fullAddress || `${order.deliveryAddress.street}, ${order.deliveryAddress.city}, ${order.deliveryAddress.state} ${order.deliveryAddress.zip}`
+      });
+    }
 
     res.json({
       success: true,

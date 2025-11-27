@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../utils/api';
 import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 import './Login.css';
 
 const Login = () => {
   const [step, setStep] = useState(1);
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -18,17 +19,17 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // Validate phone number format
-      const phoneRegex = /^[6-9]\d{9}$/;
-      if (!phoneRegex.test(phone)) {
-        toast.error('Please enter a valid 10-digit mobile number');
+      // Validate email format
+      const emailRegex = /^\S+@\S+\.\S+$/;
+      if (!emailRegex.test(email)) {
+        toast.error('Please enter a valid email address');
         setLoading(false);
         return;
       }
 
-      const response = await authAPI.requestOTP(phone);
+      const response = await authAPI.requestOTP(email);
       if (response.data.success) {
-        toast.success('OTP sent to your phone!');
+        toast.success('OTP sent to your email!');
         setStep(2);
       }
     } catch (error) {
@@ -43,7 +44,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await authAPI.verifyOTP(phone, otp);
+      const response = await authAPI.verifyOTP(email, otp);
       if (response.data.success) {
         login(response.data.user, response.data.token);
         toast.success('Login successful!');
@@ -56,31 +57,69 @@ const Login = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const response = await authAPI.googleLogin(credentialResponse.credential);
+      if (response.data.success) {
+        login(response.data.user, response.data.token);
+        toast.success('Google login successful!');
+        navigate('/');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Google login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error('Google login failed. Please try again.');
+  };
+
   return (
     <div className="login-page">
       <div className="login-container">
         <div className="login-card">
           <h1>Welcome to FoodCart</h1>
-          <p className="subtitle">Login or Sign up with your phone number</p>
+          <p className="subtitle">Login or Sign up with your email</p>
 
           {step === 1 ? (
-            <form onSubmit={handleRequestOTP}>
-              <div className="input-group">
-                <label>Phone Number</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                  placeholder="Enter your 10-digit phone number"
-                  maxLength={10}
-                  required
-                />
-                <small>Enter 10-digit mobile number (e.g., 9876543210)</small>
+            <>
+              <form onSubmit={handleRequestOTP}>
+                <div className="input-group">
+                  <label>Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    required
+                  />
+                  <small>We'll send you an OTP to verify your email</small>
+                </div>
+                <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+                  {loading ? 'Sending...' : 'Send OTP'}
+                </button>
+              </form>
+
+              <div className="divider">
+                <span>OR</span>
               </div>
-              <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-                {loading ? 'Sending...' : 'Send OTP'}
-              </button>
-            </form>
+
+              <div className="google-login-wrapper">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  useOneTap
+                  theme="filled_blue"
+                  size="large"
+                  text="continue_with"
+                  shape="rectangular"
+                  width="100%"
+                />
+              </div>
+            </>
           ) : (
             <form onSubmit={handleVerifyOTP}>
               <div className="input-group">
@@ -93,7 +132,7 @@ const Login = () => {
                   maxLength={6}
                   required
                 />
-                <small>OTP sent to +91{phone}</small>
+                <small>OTP sent to {email}</small>
               </div>
               <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
                 {loading ? 'Verifying...' : 'Verify & Login'}
@@ -104,7 +143,7 @@ const Login = () => {
                 onClick={() => setStep(1)}
                 style={{ marginTop: '10px' }}
               >
-                Change Phone Number
+                Change Email Address
               </button>
             </form>
           )}

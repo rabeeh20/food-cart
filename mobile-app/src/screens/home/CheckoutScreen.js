@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
+import RazorpayCheckout from 'react-native-razorpay';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { orderAPI, addressAPI } from '../../utils/api';
+import { orderAPI, addressAPI, paymentAPI } from '../../utils/api';
 import { COLORS, SPACING, RADIUS, FONT_SIZE, FONT_WEIGHT, SHADOWS } from '../../constants/Colors';
 import { PAYMENT_METHODS } from '../../utils/constants';
 
@@ -89,10 +90,11 @@ const CheckoutScreen = ({ navigation }) => {
         paymentMethod,
       };
 
-      const response = await orderAPI.create(orderData);
+      // Handle Cash on Delivery
+      if (paymentMethod === PAYMENT_METHODS.COD) {
+        const response = await orderAPI.create(orderData);
 
-      if (response.data.success) {
-        if (paymentMethod === PAYMENT_METHODS.COD) {
+        if (response.data.success) {
           clearCart();
           Toast.show({
             type: 'success',
@@ -100,22 +102,86 @@ const CheckoutScreen = ({ navigation }) => {
             text2: 'Your order has been placed successfully',
           });
           navigation.navigate('Orders');
-        } else {
-          // Handle online payment
-          Toast.show({
-            type: 'info',
-            text1: 'Payment',
-            text2: 'Online payment coming soon!',
-          });
         }
+        setLoading(false);
+        return;
       }
+
+      // Handle Razorpay Payment
+      // Create order first
+      const tempOrderResponse = await orderAPI.create(orderData);
+      const tempOrder = tempOrderResponse.data.order;
+
+      // Create Razorpay payment order
+      const paymentOrderResponse = await paymentAPI.createOrder(
+        tempOrder.totalAmount,
+        tempOrder.orderId
+      );
+
+      const { orderId, amount, currency, key } = paymentOrderResponse.data;
+
+      // Razorpay options
+      const options = {
+        key: key,
+        amount: amount,
+        currency: currency,
+        name: 'FoodCart',
+        description: `Order ${tempOrder.orderId}`,
+        order_id: orderId,
+        prefill: {
+          email: user.email,
+          contact: selectedAddress.phone || user.phone || '',
+          name: user.name || '',
+        },
+        theme: {
+          color: COLORS.primary,
+        },
+      };
+
+      setLoading(false);
+
+      RazorpayCheckout.open(options)
+        .then(async (data) => {
+          // Payment success
+          try {
+            const verifyResponse = await paymentAPI.verifyPayment({
+              razorpay_order_id: data.razorpay_order_id,
+              razorpay_payment_id: data.razorpay_payment_id,
+              razorpay_signature: data.razorpay_signature,
+              orderId: tempOrder.orderId,
+            });
+
+            if (verifyResponse.data.success) {
+              clearCart();
+              Toast.show({
+                type: 'success',
+                text1: 'Payment Successful!',
+                text2: 'Your order has been placed',
+              });
+              navigation.navigate('Orders');
+            }
+          } catch (error) {
+            Toast.show({
+              type: 'error',
+              text1: 'Payment Verification Failed',
+              text2: 'Please contact support',
+            });
+          }
+        })
+        .catch((error) => {
+          // Payment cancelled or failed
+          Toast.show({
+            type: 'error',
+            text1: 'Payment Cancelled',
+            text2: 'Your order was not placed',
+          });
+        });
     } catch (error) {
       Toast.show({
         type: 'error',
         text1: 'Error',
         text2: error.response?.data?.message || 'Failed to place order',
       });
-    } finally {
       setLoading(false);
     }
   };
