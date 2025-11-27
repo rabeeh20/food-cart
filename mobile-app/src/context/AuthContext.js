@@ -72,34 +72,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const googleLogin = async (credential) => {
-    try {
-      console.log('🔐 Google login with credential');
-      const response = await authAPI.googleLogin(credential);
-
-      if (response.data.success) {
-        const { token, user: userData } = response.data;
-
-        // Save token and user data
-        await saveToken(token);
-        await saveUser(userData);
-
-        setUser(userData);
-        setIsAuthenticated(true);
-
-        return { success: true, message: 'Google login successful' };
-      }
-
-      return { success: false, message: 'Google login failed' };
-    } catch (error) {
-      console.log('❌ Google login failed:', error.message);
-      return {
-        success: false,
-        message: error.response?.data?.message || 'Failed to login with Google',
-      };
-    }
-  };
-
   const logout = async () => {
     try {
       await removeToken();
@@ -128,7 +100,6 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         requestOTP,
         verifyOTP,
-        googleLogin,
         logout,
         updateUser,
       }}

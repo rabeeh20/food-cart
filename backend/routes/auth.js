@@ -1,14 +1,10 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User.js';
 import { generateOTP, sendOTPEmail } from '../utils/email.js';
 import { verifyUser } from '../middleware/auth.js';
 
 const router = express.Router();
-
-// Initialize Google OAuth client
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Request OTP for login/signup
 router.post('/request-otp', async (req, res) => {
@@ -142,73 +138,6 @@ router.post('/verify-otp', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error. Please try again later.'
-    });
-  }
-});
-
-// Google OAuth Login
-router.post('/google', async (req, res) => {
-  try {
-    const { credential } = req.body;
-
-    if (!credential) {
-      return res.status(400).json({
-        success: false,
-        message: 'Google credential is required'
-      });
-    }
-
-    // Verify Google token
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID
-    });
-
-    const payload = ticket.getPayload();
-    const { sub: googleId, email, name, picture } = payload;
-
-    // Find or create user
-    let user = await User.findOne({ $or: [{ googleId }, { email }] });
-
-    if (!user) {
-      // Create new user with Google account
-      user = new User({
-        email,
-        name,
-        googleId,
-        isVerified: true
-      });
-      await user.save();
-    } else if (!user.googleId) {
-      // Link Google account to existing email user
-      user.googleId = googleId;
-      if (!user.name) user.name = name;
-      user.isVerified = true;
-      await user.save();
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, email: user.email, role: 'user' },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    res.json({
-      success: true,
-      message: 'Google login successful',
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name
-      }
-    });
-  } catch (error) {
-    console.error('Google auth error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Google authentication failed. Please try again.'
     });
   }
 });

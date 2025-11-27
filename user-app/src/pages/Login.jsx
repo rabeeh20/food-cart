@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../utils/api';
 import toast from 'react-hot-toast';
-import { GoogleLogin } from '@react-oauth/google';
 import './Login.css';
 
 const Login = () => {
@@ -57,26 +56,6 @@ const Login = () => {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      setLoading(true);
-      const response = await authAPI.googleLogin(credentialResponse.credential);
-      if (response.data.success) {
-        login(response.data.user, response.data.token);
-        toast.success('Google login successful!');
-        navigate('/');
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Google login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleError = () => {
-    toast.error('Google login failed. Please try again.');
-  };
-
   return (
     <div className="login-page">
       <div className="login-container">
@@ -85,41 +64,22 @@ const Login = () => {
           <p className="subtitle">Login or Sign up with your email</p>
 
           {step === 1 ? (
-            <>
-              <form onSubmit={handleRequestOTP}>
-                <div className="input-group">
-                  <label>Email Address</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    required
-                  />
-                  <small>We'll send you an OTP to verify your email</small>
-                </div>
-                <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-                  {loading ? 'Sending...' : 'Send OTP'}
-                </button>
-              </form>
-
-              <div className="divider">
-                <span>OR</span>
-              </div>
-
-              <div className="google-login-wrapper">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                  useOneTap
-                  theme="filled_blue"
-                  size="large"
-                  text="continue_with"
-                  shape="rectangular"
-                  width="100%"
+            <form onSubmit={handleRequestOTP}>
+              <div className="input-group">
+                <label>Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  required
                 />
+                <small>We'll send you an OTP to verify your email</small>
               </div>
-            </>
+              <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+                {loading ? 'Sending...' : 'Send OTP'}
+              </button>
+            </form>
           ) : (
             <form onSubmit={handleVerifyOTP}>
               <div className="input-group">
