@@ -32,7 +32,7 @@ const Navbar = () => {
           </Link>
 
           <button className="menu-toggle" onClick={() => setShowMenu(!showMenu)}>
-            <Menu />
+            <Menu size={24} />
           </button>
 
           <div className={`navbar-menu ${showMenu ? 'active' : ''}`}>
